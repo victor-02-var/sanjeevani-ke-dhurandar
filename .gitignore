@@ -34,6 +34,9 @@ bower_components
 # node-waf configuration
 .lock-wscript
 
+# Large OSRM Map Files (Too large for GitHub)
+osrm-data/
+
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 build/Release
 
@@ -69,6 +72,13 @@ web_modules/
 .env
 .env.*
 !.env.example
+
+
+# Python Virtual Environments & Caches
+venv/
+**/venv/
+__pycache__/
+*.pyc
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
