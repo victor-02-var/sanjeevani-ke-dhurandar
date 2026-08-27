@@ -56,7 +56,7 @@ export const verifyGarbageImage = async (imageBuffer, mimeType = 'image/jpeg') =
     const base64Data = imageBuffer.toString('base64');
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-2.0-flash',
       contents: [
         {
           inlineData: {

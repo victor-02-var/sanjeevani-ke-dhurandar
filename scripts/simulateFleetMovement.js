@@ -56,6 +56,8 @@ async function runStrictRouteSimulation() {
     driverName: v.driver_name || `Driver ${v.id}`,
     capacity: v.capacity_kg || 5000,
     currentLoad: v.current_load_kg || 0,
+    latitude: v.latitude,
+    longitude: v.longitude,
     minLat: parseFloat(v.min_lat || 19.9800),
     maxLat: parseFloat(v.max_lat || 20.0200),
     minLng: parseFloat(v.min_lng || 73.7500),

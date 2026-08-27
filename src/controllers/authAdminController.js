@@ -1,8 +1,6 @@
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { supabase } from '../config/supabase.js';
+import { supabase, supabaseAdmin } from '../config/supabase.js';
 
-// 1. Admin Email/Password Login
+// POST /api/auth/admin/login
 export const adminLogin = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -11,49 +9,58 @@ export const adminLogin = async (req, res, next) => {
       return res.status(400).json({ error: 'Email and password are required.' });
     }
 
-    // Use .maybeSingle() to safely handle non-existent admin emails
-    const { data: admin, error } = await supabase
-      .from('admins')
-      .select('*')
-      .eq('email', email.trim().toLowerCase())
+    // 1. Sign in via Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
+    });
+
+    if (authError || !authData?.user) {
+      return res.status(401).json({ error: 'Invalid admin credentials.' });
+    }
+
+    // 2. Check profile role is admin
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .select('id, email, full_name, role, avatar_url, is_active')
+      .eq('id', authData.user.id)
       .maybeSingle();
 
-    if (error || !admin) {
-      return res.status(401).json({ error: 'Invalid admin credentials.' });
+    if (profileError || !profile) {
+      return res.status(401).json({ error: 'Admin profile not found.' });
     }
 
-    // Verify hashed password
-    const isMatch = await bcrypt.compare(password, admin.password_hash);
-    if (!isMatch) {
-      return res.status(401).json({ error: 'Invalid admin credentials.' });
+    if (profile.role !== 'admin') {
+      return res.status(403).json({ error: 'Access forbidden. Admin rights required.' });
     }
 
-    // Generate Admin JWT Token
-    const token = jwt.sign(
-      { id: admin.id, email: admin.email, role: admin.role, userType: 'admin' },
-      process.env.JWT_SECRET,
-      { expiresIn: '1d' }
-    );
+    if (!profile.is_active) {
+      return res.status(403).json({ error: 'This admin account has been deactivated.' });
+    }
 
+    // 3. Return Supabase session token (access_token) — no custom JWT needed
     res.status(200).json({
       message: 'Admin authentication successful',
       user: {
-        id: admin.id,
-        email: admin.email,
-        full_name: admin.full_name,
-        role: admin.role,
+        id: profile.id,
+        email: profile.email,
+        full_name: profile.full_name,
+        role: profile.role,
+        avatar_url: profile.avatar_url,
       },
-      token,
+      access_token: authData.session.access_token,
+      refresh_token: authData.session.refresh_token,
+      expires_at: authData.session.expires_at,
     });
   } catch (err) {
     next(err);
   }
 };
 
-// 2. Admin Signup / Registration
+// POST /api/auth/admin/signup
 export const adminSignup = async (req, res, next) => {
   try {
-    const { full_name, email, password, role } = req.body;
+    const { full_name, email, password } = req.body;
 
     if (!full_name || !email || !password) {
       return res.status(400).json({ error: 'Full name, email, and password are required.' });
@@ -61,47 +68,242 @@ export const adminSignup = async (req, res, next) => {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    // Check if admin already exists
-    const { data: existingAdmin } = await supabase
-      .from('admins')
-      .select('id')
-      .eq('email', normalizedEmail)
-      .maybeSingle();
+    // 1. Create user via admin client (skips email confirmation)
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email: normalizedEmail,
+      password,
+      email_confirm: true,
+      user_metadata: { full_name, role: 'admin' },
+    });
 
-    if (existingAdmin) {
-      return res.status(400).json({ error: 'An admin account with this email already exists.' });
+    if (authError) {
+      if (authError.message.includes('already registered')) {
+        return res.status(400).json({ error: 'An account with this email already exists.' });
+      }
+      throw authError;
     }
 
-    // Hash password
-    const password_hash = await bcrypt.hash(password, 10);
+    // 2. Ensure profile row has correct role (trigger may default to 'citizen')
+    const { error: updateError } = await supabaseAdmin
+      .from('profiles')
+      .update({ full_name, role: 'admin' })
+      .eq('id', authData.user.id);
 
-    // Insert new admin record
-    const { data: newAdmin, error } = await supabase
-      .from('admins')
-      .insert([
-        {
-          full_name,
-          email: normalizedEmail,
-          password_hash,
-          role: role || 'Admin',
-        },
-      ])
-      .select('id, full_name, email, role, created_at')
-      .single();
-
-    if (error) throw error;
-
-    // Generate Admin JWT Token
-    const token = jwt.sign(
-      { id: newAdmin.id, email: newAdmin.email, role: newAdmin.role, userType: 'admin' },
-      process.env.JWT_SECRET,
-      { expiresIn: '1d' }
-    );
+    if (updateError) throw updateError;
 
     res.status(201).json({
       message: 'Admin account created successfully',
-      user: newAdmin,
-      token,
+      user: { id: authData.user.id, email: normalizedEmail, full_name, role: 'admin' },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// POST /api/auth/admin/create-vehicle-authority
+export const createVehicleAuthority = async (req, res, next) => {
+  try {
+    const { full_name, email, password, phone, address } = req.body;
+
+    if (!full_name || !email || !password) {
+      return res.status(400).json({ error: 'Full name, email, and password are required.' });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // 1. Create user via admin client (skips email confirmation)
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email: normalizedEmail,
+      password,
+      email_confirm: true,
+      user_metadata: { full_name, role: 'vehicle_authority' },
+    });
+
+    if (authError) {
+      if (authError.message.includes('already registered')) {
+        return res.status(400).json({ error: 'An account with this email already exists.' });
+      }
+      throw authError;
+    }
+
+    // 2. Update profile with vehicle_authority role and additional info
+    const updateData = { 
+      full_name, 
+      role: 'vehicle_authority'
+    };
+    if (phone) updateData.phone = phone;
+    if (address) updateData.address = address;
+
+    const { error: updateError } = await supabaseAdmin
+      .from('profiles')
+      .update(updateData)
+      .eq('id', authData.user.id);
+
+    if (updateError) throw updateError;
+
+    res.status(201).json({
+      message: 'Vehicle authority account created successfully. Credentials can be shared with the vehicle authority person.',
+      user: { 
+        id: authData.user.id, 
+        email: normalizedEmail, 
+        full_name, 
+        role: 'vehicle_authority',
+        phone: phone || null,
+        address: address || null
+      },
+      credentials: {
+        email: normalizedEmail,
+        password: password, // Return password only on creation so admin can share it
+        login_endpoint: '/api/auth/vehicle-authority/login'
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// GET /api/auth/admin/vehicle-authorities
+export const getAllVehicleAuthorities = async (req, res, next) => {
+  try {
+    const { data: authorities, error } = await supabaseAdmin
+      .from('profiles')
+      .select('id, email, full_name, phone, address, avatar_url, is_active, created_at')
+      .eq('role', 'vehicle_authority')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    // Get vehicle count for each authority
+    const authoritiesWithStats = await Promise.all(
+      authorities.map(async (authority) => {
+        const { count } = await supabaseAdmin
+          .from('vehicles')
+          .select('id', { count: 'exact', head: true })
+          .eq('authority_id', authority.id);
+
+        return {
+          ...authority,
+          managed_vehicles_count: count || 0
+        };
+      })
+    );
+
+    res.status(200).json({
+      count: authoritiesWithStats.length,
+      vehicle_authorities: authoritiesWithStats
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// PATCH /api/auth/admin/vehicle-authority/:id/toggle-status
+export const toggleVehicleAuthorityStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    // Get current status
+    const { data: profile, error: fetchError } = await supabaseAdmin
+      .from('profiles')
+      .select('is_active, role')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !profile) {
+      return res.status(404).json({ error: 'Vehicle authority not found.' });
+    }
+
+    if (profile.role !== 'vehicle_authority') {
+      return res.status(400).json({ error: 'User is not a vehicle authority.' });
+    }
+
+    // Toggle status
+    const { data: updated, error: updateError } = await supabaseAdmin
+      .from('profiles')
+      .update({ is_active: !profile.is_active })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (updateError) throw updateError;
+
+    res.status(200).json({
+      message: `Vehicle authority account ${updated.is_active ? 'activated' : 'deactivated'} successfully.`,
+      user: updated
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// DELETE /api/auth/admin/vehicle-authority/:id
+export const deleteVehicleAuthority = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    // Check if user is vehicle_authority
+    const { data: profile, error: fetchError } = await supabaseAdmin
+      .from('profiles')
+      .select('role')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !profile) {
+      return res.status(404).json({ error: 'Vehicle authority not found.' });
+    }
+
+    if (profile.role !== 'vehicle_authority') {
+      return res.status(400).json({ error: 'User is not a vehicle authority.' });
+    }
+
+    // Delete from auth.users (cascade will handle profile)
+    const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(id);
+    
+    if (authError) throw authError;
+
+    res.status(200).json({
+      message: 'Vehicle authority account deleted successfully.'
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// PATCH /api/auth/admin/vehicle-authority/:id/confirm-email
+export const confirmVehicleAuthorityEmail = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    // Check if user exists and is vehicle_authority
+    const { data: profile, error: fetchError } = await supabaseAdmin
+      .from('profiles')
+      .select('email, role')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !profile) {
+      return res.status(404).json({ error: 'Vehicle authority not found.' });
+    }
+
+    if (profile.role !== 'vehicle_authority') {
+      return res.status(400).json({ error: 'User is not a vehicle authority.' });
+    }
+
+    // Update user to confirm email
+    const { data: updatedUser, error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+      id,
+      { email_confirm: true }
+    );
+
+    if (updateError) throw updateError;
+
+    res.status(200).json({
+      message: 'Vehicle authority email confirmed successfully.',
+      user: {
+        id: updatedUser.user.id,
+        email: updatedUser.user.email,
+        email_confirmed_at: updatedUser.user.email_confirmed_at
+      }
     });
   } catch (err) {
     next(err);

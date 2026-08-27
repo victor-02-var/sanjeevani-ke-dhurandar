@@ -5,12 +5,24 @@ import dotenv from 'dotenv';
 
 import citizenAuthRoutes from './routes/authCitizenRoutes.js';
 import adminAuthRoutes from './routes/authAdminRoutes.js';
+import driverAuthRoutes from './routes/authDriverRoutes.js';
+import vehicleAuthorityAuthRoutes from './routes/authVehicleAuthorityRoutes.js';
+import vehicleAuthRoutes from './routes/authVehicleRoutes.js';
+import citizenRoutes from './routes/citizenRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
+import driverRoutes from './routes/driverRoutes.js';
 import complaintRoutes from './routes/complaintRoutes.js';
 import trackingRoutes from './routes/trackingRoutes.js';
 import binRoutes from './routes/binRoutes.js';
 import collectionRoutes from './routes/collectionRoutes.js';
 import vehicleRoutes from './routes/vehicleRoutes.js';
+import vehicleAuthorityRoutes from './routes/vehicleAuthorityRoutes.js';
 import routeRoutes from './routes/routeRoutes.js';
+import carbonPointsRoutes from './routes/carbonPointsRoutes.js';
+import qrRoutes from './routes/qrRoutes.js';
+import qrScanRoutes from './routes/qrScanRoutes.js';
+import kmlRoutes from './routes/kmlRoutes.js';
+import deadAnimalRoutes from './routes/deadAnimalRoutes.js';
 // import dashboardRoutes from './routes/dashboardRoutes.js';
 
 import { errorHandler } from './middleware/errorHandler.js';
@@ -23,8 +35,12 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
+  'http://localhost:8080',
+  'http://localhost:8081',
   'http://localhost:5174',
   'http://127.0.0.1:3000',
+  'http://127.0.0.1:8081',
+  'http://127.0.0.1:8080',
   'http://127.0.0.1:5173',
   'http://127.0.0.1:5174',
   process.env.FRONTEND_URL
@@ -32,7 +48,6 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (Postman, mobile apps, curl) or allowed origins
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -46,14 +61,37 @@ const corsOptions = {
 };
 
 // Middlewares
-app.use(cors(corsOptions)); // Automatically handles preflight (OPTIONS) requests
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(morgan('dev'));
 
+// 🛠️ SAFETY MIDDLEWARE: Automatically fix double /api/api/ requests from frontend
+app.use((req, res, next) => {
+  if (req.url.startsWith('/api/api/')) {
+    req.url = req.url.replace('/api/api/', '/api/');
+  }
+  next();
+});
+
 // Auth Routes
 app.use('/api/auth/citizen', citizenAuthRoutes);
 app.use('/api/auth/admin', adminAuthRoutes);
+app.use('/api/auth/driver', driverAuthRoutes);
+app.use('/api/auth/vehicle-authority', vehicleAuthorityAuthRoutes);
+app.use('/api/auth/vehicle', vehicleAuthRoutes);
+
+// Citizen Routes
+app.use('/api/citizen', citizenRoutes);
+
+// Admin Routes
+app.use('/api/admin', adminRoutes);
+
+// Driver Routes
+app.use('/api/driver', driverRoutes);
+
+// Vehicle Authority Routes
+app.use('/api/vehicle-authority', vehicleAuthorityRoutes);
 
 // Feature Routes
 app.use('/api/tracking', trackingRoutes); 
@@ -62,6 +100,11 @@ app.use('/api/bins', binRoutes);
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/collections', collectionRoutes);
 app.use('/api/routes', routeRoutes);
+app.use('/api/carbon-points', carbonPointsRoutes);
+app.use('/api/qr', qrRoutes);
+app.use('/api/qr-scan', qrScanRoutes);
+app.use('/api/kml', kmlRoutes);
+app.use('/api/dead-animal-reports', deadAnimalRoutes);
 // app.use('/api/dashboard', dashboardRoutes);
 
 // Global Error Handler (MUST BE LAST)
