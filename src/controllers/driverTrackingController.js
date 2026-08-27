@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabase.js';
+import { supabaseAdmin as supabase } from '../config/supabase.js';
 
 // GET /api/tracking/assigned-drivers - Fetch assigned drivers and active live telemetry
 export const getAssignedDriversTracking = async (req, res, next) => {

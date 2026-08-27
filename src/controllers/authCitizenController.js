@@ -1,11 +1,6 @@
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { OAuth2Client } from 'google-auth-library';
-import { supabase } from '../config/supabase.js';
+import { supabase, supabaseAdmin } from '../config/supabase.js';
 
-const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
-// 1. Citizen Email/Password Signup
+// POST /api/auth/citizen/signup
 export const citizenSignup = async (req, res, next) => {
   try {
     const { email, password, full_name } = req.body;
@@ -14,47 +9,69 @@ export const citizenSignup = async (req, res, next) => {
       return res.status(400).json({ error: 'Email, password, and full name are required.' });
     }
 
-    // Check if user already exists
-    const { data: existingUser } = await supabase
-      .from('citizens')
-      .select('id')
-      .eq('email', email)
-      .single();
-
-    if (existingUser) {
-      return res.status(400).json({ error: 'Citizen account already exists with this email.' });
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: 'Please enter a valid email address.' });
     }
 
-    // Hash password
-    const password_hash = await bcrypt.hash(password, 10);
+    // Validate password length
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters long.' });
+    }
 
-    // Insert Citizen into 'citizens' table
-    const { data: newCitizen, error } = await supabase
-      .from('citizens')
-      .insert([{ email, password_hash, full_name }])
-      .select('id, email, full_name, created_at')
-      .single();
+    const normalizedEmail = email.trim().toLowerCase();
+    console.log('📝 Attempting to create citizen account:', { email: normalizedEmail, full_name });
 
-    if (error) throw error;
+    // Check if user already exists
+    const { data: existingProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('email')
+      .eq('email', normalizedEmail)
+      .maybeSingle();
 
-    // Generate JWT
-    const token = jwt.sign(
-      { id: newCitizen.id, email: newCitizen.email, userType: 'citizen' },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    if (existingProfile) {
+      return res.status(400).json({ error: 'An account with this email already exists.' });
+    }
+
+    // Create user using admin client (bypasses email confirmation and rate limits)
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email: normalizedEmail,
+      password,
+      email_confirm: true, // Auto-confirm email (skip verification)
+      user_metadata: { full_name, role: 'citizen' },
+    });
+
+    if (authError) {
+      console.error('❌ Supabase signup error:', authError);
+      
+      if (authError.message.includes('already registered') || authError.message.includes('already been registered')) {
+        return res.status(400).json({ error: 'An account with this email already exists.' });
+      }
+      
+      // Return the actual Supabase error message
+      return res.status(400).json({ error: authError.message || 'Signup failed. Please try again.' });
+    }
+
+    console.log('✅ User created successfully:', authData.user.id);
+
+    // Ensure profile has correct role
+    await supabaseAdmin
+      .from('profiles')
+      .update({ full_name, role: 'citizen' })
+      .eq('id', authData.user.id);
 
     res.status(201).json({
-      message: 'Citizen registered successfully',
-      user: newCitizen,
-      token
+      message: 'Registered successfully. You can now log in with your credentials.',
+      user: { id: authData.user.id, email: authData.user.email, full_name },
     });
   } catch (err) {
+    console.error('❌ Signup error:', err);
     next(err);
   }
 };
 
-// 2. Citizen Email/Password Login
+// POST /api/auth/citizen/login
 export const citizenLogin = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -63,99 +80,151 @@ export const citizenLogin = async (req, res, next) => {
       return res.status(400).json({ error: 'Email and password are required.' });
     }
 
-    // Fetch citizen
-    const { data: citizen, error } = await supabase
-      .from('citizens')
-      .select('*')
-      .eq('email', email)
-      .single();
+    // 1. Sign in via Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
+    });
 
-    if (error || !citizen) {
+    if (authError || !authData?.user) {
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
-    // Check password
-    if (!citizen.password_hash) {
-      return res.status(400).json({ error: 'Account created with Google. Please sign in with Google.' });
+    // 2. Fetch profile and confirm role
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .select('id, email, full_name, role, avatar_url, is_active')
+      .eq('id', authData.user.id)
+      .maybeSingle();
+
+    if (profileError || !profile) {
+      return res.status(401).json({ error: 'Citizen profile not found.' });
     }
 
-    const isMatch = await bcrypt.compare(password, citizen.password_hash);
-    if (!isMatch) {
-      return res.status(401).json({ error: 'Invalid email or password.' });
+    if (profile.role !== 'citizen') {
+      return res.status(403).json({ error: 'Access forbidden. Citizen account required.' });
     }
 
-    // Generate JWT
-    const token = jwt.sign(
-      { id: citizen.id, email: citizen.email, userType: 'citizen' },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    if (!profile.is_active) {
+      return res.status(403).json({ error: 'Your account has been deactivated.' });
+    }
 
     res.status(200).json({
-      message: 'Citizen login successful',
-      user: { id: citizen.id, email: citizen.email, full_name: citizen.full_name },
-      token
+      message: 'Login successful',
+      user: {
+        id: profile.id,
+        email: profile.email,
+        full_name: profile.full_name,
+        avatar_url: profile.avatar_url,
+      },
+      access_token: authData.session.access_token,
+      refresh_token: authData.session.refresh_token,
+      expires_at: authData.session.expires_at,
     });
   } catch (err) {
     next(err);
   }
 };
 
-// 3. Citizen Google OAuth Sign-In / Sign-Up
+// POST /api/auth/citizen/google
+// Frontend calls supabase.auth.signInWithOAuth on client side,
+// then sends the resulting access_token here to get the profile back
 export const citizenGoogleAuth = async (req, res, next) => {
   try {
-    const { idToken } = req.body; // Received from frontend React Google Login
+    const { access_token } = req.body;
 
-    if (!idToken) {
-      return res.status(400).json({ error: 'Google ID Token is required.' });
+    if (!access_token) {
+      return res.status(400).json({ error: 'access_token is required.' });
     }
 
-    // Verify token with Google
-    const ticket = await googleClient.verifyIdToken({
-      idToken,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
+    // 1. Verify token and get user
+    const { data: userData, error: userError } = await supabase.auth.getUser(access_token);
 
-    const payload = ticket.getPayload();
-    const { sub: google_id, email, name: full_name } = payload;
+    if (userError || !userData?.user) {
+      return res.status(401).json({ error: 'Invalid or expired Google token.' });
+    }
 
-    // Check if citizen exists by google_id or email
-    let { data: citizen } = await supabase
-      .from('citizens')
-      .select('*')
-      .or(`google_id.eq.${google_id},email.eq.${email}`)
+    const authUser = userData.user;
+
+    // 2. Get profile (auto-created by trigger on signup)
+    let { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('id, email, full_name, role, avatar_url, is_active')
+      .eq('id', authUser.id)
       .maybeSingle();
 
-    if (!citizen) {
-      // Sign up new Google Citizen
-      const { data: newCitizen, error: insertError } = await supabase
-        .from('citizens')
-        .insert([{ email, full_name, google_id }])
-        .select('*')
+    // Fallback: create profile if trigger missed it
+    if (!profile) {
+      const { data: newProfile, error: insertError } = await supabaseAdmin
+        .from('profiles')
+        .insert([{
+          id: authUser.id,
+          email: authUser.email,
+          full_name: authUser.user_metadata?.full_name || authUser.email,
+          avatar_url: authUser.user_metadata?.avatar_url || null,
+          role: 'citizen',
+        }])
+        .select()
         .single();
 
       if (insertError) throw insertError;
-      citizen = newCitizen;
-    } else if (!citizen.google_id) {
-      // Link Google ID if registered via email previously
-      await supabase
-        .from('citizens')
-        .update({ google_id })
-        .eq('id', citizen.id);
+      profile = newProfile;
     }
 
-    // Generate JWT
-    const token = jwt.sign(
-      { id: citizen.id, email: citizen.email, userType: 'citizen' },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    if (profile.role !== 'citizen') {
+      return res.status(403).json({ error: 'This account is not registered as a citizen.' });
+    }
 
     res.status(200).json({
       message: 'Google authentication successful',
-      user: { id: citizen.id, email: citizen.email, full_name: citizen.full_name },
-      token
+      user: {
+        id: profile.id,
+        email: profile.email,
+        full_name: profile.full_name,
+        avatar_url: profile.avatar_url,
+      },
+      access_token,
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// POST /api/auth/citizen/refresh
+export const citizenRefreshToken = async (req, res, next) => {
+  try {
+    const { refresh_token } = req.body;
+    if (!refresh_token) return res.status(400).json({ error: 'refresh_token is required.' });
+
+    const { data, error } = await supabase.auth.refreshSession({ refresh_token });
+    if (error || !data?.session) {
+      return res.status(401).json({ error: 'Refresh token invalid or expired. Please log in again.' });
+    }
+
+    res.status(200).json({
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token,
+      expires_at: data.session.expires_at,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// POST /api/auth/citizen/send-otp
+export const citizenSendOtp = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email is required.' });
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email.trim().toLowerCase(),
+      options: { shouldCreateUser: false },
+    });
+
+    if (error) throw error;
+
+    res.status(200).json({ message: 'OTP sent to email.' });
   } catch (err) {
     next(err);
   }

@@ -1,37 +1,63 @@
-import { supabase } from '../config/supabase.js';
+import { supabaseAdmin as supabase } from '../config/supabase.js';
 import { cloudinary } from '../config/cloudinary.js';
 import { extractGpsFromMetadata, verifyGarbageImage } from '../services/imageService.js';
+import { seedInitialTimeline } from './timelineController.js';
 
-// 1. POST /api/complaints - Citizen submits a new complaint
-export const createComplaint = async (req, res, next) => {
+// 0. POST /api/complaints/verify-image - Background AI image verification (No Cloudinary Upload)
+export const verifyImageOnly = async (req, res, next) => {
   try {
-    const citizen_id = req.user.id;
-    const { description } = req.body;
-
     if (!req.file) {
-      return res.status(400).json({ error: 'Please upload an image of the waste site.' });
+      return res.status(400).json({ error: 'Please upload an image file.' });
     }
 
     const imageBuffer = req.file.buffer;
     const mimeType = req.file.mimetype;
 
-    console.log('⌛ Verifying image content with Gemini AI Vision...');
+    console.log('⌛ [Background] Verifying image content with Gemini AI Vision...');
     const verification = await verifyGarbageImage(imageBuffer, mimeType);
 
     if (!verification.isGarbage) {
       return res.status(422).json({
         success: false,
         error: 'Invalid Image Upload',
-        reason: verification.reason,
+        reason: verification.reason || 'The uploaded image does not appear to show municipal waste.',
         detectedCategory: verification.category
       });
     }
 
-    console.log('⌛ Extracting EXIF GPS coordinates...');
+    console.log('⌛ [Background] Extracting EXIF GPS coordinates...');
     const exifGps = extractGpsFromMetadata(imageBuffer);
 
-    const finalLat = exifGps.latitude || (req.body.latitude ? parseFloat(req.body.latitude) : null);
-    const finalLng = exifGps.longitude || (req.body.longitude ? parseFloat(req.body.longitude) : null);
+    res.status(200).json({
+      success: true,
+      verification,
+      exifGps
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// 1. POST /api/complaints - Citizen submits a new complaint (Uploads image to Cloudinary & saves record)
+export const createComplaint = async (req, res, next) => {
+  try {
+    const citizen_id = req.user.id;
+    const { 
+      description, 
+      category, 
+      ai_confidence, 
+      ai_reason, 
+      gps_source,
+      latitude,
+      longitude 
+    } = req.body;
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'Please upload an image of the waste site.' });
+    }
+
+    const finalLat = latitude ? parseFloat(latitude) : null;
+    const finalLng = longitude ? parseFloat(longitude) : null;
 
     if (!finalLat || !finalLng) {
       return res.status(400).json({
@@ -39,7 +65,8 @@ export const createComplaint = async (req, res, next) => {
       });
     }
 
-    console.log('⌛ Uploading image to Cloudinary...');
+    console.log('⌛ [Submit] Uploading image to Cloudinary...');
+    const imageBuffer = req.file.buffer;
     const uploadPromise = new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         { folder: 'waste_complaints' },
@@ -59,21 +86,24 @@ export const createComplaint = async (req, res, next) => {
         {
           latitude: finalLat,
           longitude: finalLng,
-          description: description || verification.reason,
+          description: description || ai_reason || 'Municipal waste complaint',
           image_url,
           citizen_id,
           status: 'Open',
           priority: 'High',
-          category: verification.category,
-          ai_confidence: verification.confidence,
-          ai_reason: verification.reason,
-          gps_source: exifGps.hasMetadataGps ? 'EXIF_METADATA' : 'USER_PIN'
+          category: category || 'Roadside Litter',
+          ai_confidence: ai_confidence ? parseFloat(ai_confidence) : 0.95,
+          ai_reason: ai_reason || 'Verified waste',
+          gps_source: gps_source || 'USER_PIN'
         }
       ])
       .select()
       .single();
 
     if (error) throw error;
+
+    // Seed sample timeline in background (non-blocking)
+    seedInitialTimeline(newComplaint.id).catch((e) => console.warn('Timeline seed failed:', e.message));
 
     res.status(201).json({
       success: true,
@@ -85,7 +115,6 @@ export const createComplaint = async (req, res, next) => {
   }
 };
 
-// 2. GET /api/complaints/my-complaints - Get citizen's own complaints
 // 2. GET /api/complaints/my-complaints - Get citizen's own complaints
 export const getCitizenComplaints = async (req, res, next) => {
   try {
@@ -127,7 +156,12 @@ export const getAllComplaintsForAdmin = async (req, res, next) => {
         gps_source,
         assigned_driver_id,
         created_at,
-        citizens (
+        profiles:profiles!complaints_citizen_id_fkey (
+          id,
+          full_name,
+          email
+        ),
+        assigned_driver:profiles!complaints_assigned_driver_id_fkey (
           id,
           full_name,
           email
@@ -156,10 +190,34 @@ export const assignDriverToComplaint = async (req, res, next) => {
       return res.status(400).json({ error: 'Driver ID is required for assignment.' });
     }
 
+    // The admin fleet list historically submitted a vehicle UUID. Resolve it
+    // to the profile UUID required by complaints.assigned_driver_id.
+    let assignedDriverId = driverId;
+    const { data: driverProfile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', driverId)
+      .maybeSingle();
+
+    if (!driverProfile) {
+      const { data: vehicle, error: vehicleError } = await supabase
+        .from('vehicles')
+        .select('driver_id')
+        .eq('id', driverId)
+        .maybeSingle();
+
+      if (vehicleError) throw vehicleError;
+      if (!vehicle?.driver_id) {
+        return res.status(400).json({ error: 'Selected driver or vehicle was not found.' });
+      }
+
+      assignedDriverId = vehicle.driver_id;
+    }
+
     const { data: updatedComplaint, error } = await supabase
       .from('complaints')
       .update({
-        assigned_driver_id: driverId,
+        assigned_driver_id: assignedDriverId,
         status: 'Assigned'
       })
       .eq('id', id)
@@ -170,7 +228,7 @@ export const assignDriverToComplaint = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: `Complaint assigned to driver ${driverId} successfully.`,
+      message: `Complaint assigned to driver ${assignedDriverId} successfully.`,
       complaint: updatedComplaint
     });
   } catch (err) {
@@ -178,44 +236,7 @@ export const assignDriverToComplaint = async (req, res, next) => {
   }
 };
 
-// 5. PATCH /api/complaints/:id/status - Update Status (Open, Assigned, Resolved)
-// export const updateComplaintStatus = async (req, res, next) => {
-//   try {
-//     const { id } = req.params;
-//     const { status, notes } = req.body;
-
-//     if (!status) {
-//       return res.status(400).json({ error: 'Status is required.' });
-//     }
-
-//     const updatePayload = { status };
-//     if (status.toLowerCase() === 'resolved') {
-//       updatePayload.resolved_at = new Date().toISOString();
-//     }
-//     if (notes) {
-//       updatePayload.resolution_notes = notes;
-//     }
-
-//     const { data: updatedComplaint, error } = await supabase
-//       .from('complaints')
-//       .update(updatePayload)
-//       .eq('id', id)
-//       .select()
-//       .single();
-
-//     if (error) throw error;
-
-//     res.status(200).json({
-//       success: true,
-//       message: `Complaint status updated to ${status}.`,
-//       complaint: updatedComplaint
-//     });
-//   } catch (err) {
-//     next(err);
-//   }
-// };
-
-// 5. PATCH /api/complaints/:id/status - Update Status (Open, Assigned, Resolved) with Resolution Image Proof
+// 5. PATCH /api/complaints/:id/status - Update Status with Resolution Proof
 export const updateComplaintStatus = async (req, res, next) => {
   try {
     const { id } = req.params;

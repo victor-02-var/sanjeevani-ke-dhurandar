@@ -10,11 +10,19 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Memory storage to process file in memory before uploading directly to Cloudinary
-const storage = multer.memoryStorage();
-export const upload = multer({ 
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 } // Limit: 5MB
+// Memory storage — keeps file in memory buffer, no disk writes needed
+// multer v2 requires explicit memoryStorage() instance passed to storage option
+export const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
+  fileFilter: (_req, file, cb) => {
+    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (allowed.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only JPEG, PNG, and WebP images are allowed.'), false);
+    }
+  }
 });
 
 export { cloudinary };

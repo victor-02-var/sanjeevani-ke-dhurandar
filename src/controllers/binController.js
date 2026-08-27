@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabase.js';
+import { supabaseAdmin as supabase } from '../config/supabase.js';
 import { calculateBinMetrics } from '../utils/priorityEngine.js';
 import { generateMockBins } from '../utils/mockBinGenerator.js';
 
