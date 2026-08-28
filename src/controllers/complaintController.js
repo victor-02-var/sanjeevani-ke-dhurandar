@@ -1,6 +1,6 @@
 import { supabaseAdmin as supabase } from '../config/supabase.js';
 import { cloudinary } from '../config/cloudinary.js';
-import { extractGpsFromMetadata, verifyGarbageImage } from '../services/imageService.js';
+import { extractGpsFromMetadata, verifyGarbageImage, verifyTrashBotResolution } from '../services/imageService.js';
 import { seedInitialTimeline } from './timelineController.js';
 
 // 0. POST /api/complaints/verify-image - Background AI image verification (No Cloudinary Upload)
@@ -252,7 +252,30 @@ export const updateComplaintStatus = async (req, res, next) => {
         return res.status(400).json({ error: 'Proof photo of the cleaned site is required to resolve this complaint.' });
       }
 
-      console.log('⌛ Uploading resolution proof image to Cloudinary...');
+      // Fetch original complaint photo (BEFORE photo) for TrashBot comparison
+      let originalImageUrl = null;
+      try {
+        const { data: existingComplaint } = await supabase
+          .from('complaints')
+          .select('image_url')
+          .eq('id', id)
+          .maybeSingle();
+        originalImageUrl = existingComplaint?.image_url || null;
+      } catch (e) {
+        console.warn('⚠️ Could not fetch existing complaint image for TrashBot comparison:', e.message);
+      }
+
+      console.log('🤖 [TrashBot AI] Comparing resolution proof image against original complaint image...');
+      const trashBotResult = await verifyTrashBotResolution(req.file.buffer, originalImageUrl, req.file.mimetype);
+
+      if (!trashBotResult.isClean) {
+        return res.status(422).json({
+          error: `❌ TrashBot AI Verification Rejected: ${trashBotResult.reason || 'The uploaded proof image still shows uncollected waste or is identical to the original dirty complaint photo. Please upload a clear photo of the cleaned area.'}`,
+          trashBotVerification: trashBotResult
+        });
+      }
+
+      console.log('✅ [TrashBot AI] Resolution image verified successfully! Uploading to Cloudinary...');
       const imageBuffer = req.file.buffer;
       const uploadPromise = new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
@@ -268,9 +291,11 @@ export const updateComplaintStatus = async (req, res, next) => {
       const resolved_image_url = await uploadPromise;
       updatePayload.resolved_image_url = resolved_image_url;
       updatePayload.resolved_at = new Date().toISOString();
-    }
-
-    if (notes) {
+      
+      // Append TrashBot AI verification summary to notes safely without schema errors
+      const trashBotSummary = `[TrashBot AI: ${trashBotResult.reason || 'Verified Clean Site'}]`;
+      updatePayload.resolution_notes = notes ? `${notes} ${trashBotSummary}` : trashBotSummary;
+    } else if (notes) {
       updatePayload.resolution_notes = notes;
     }
 

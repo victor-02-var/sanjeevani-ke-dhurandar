@@ -31,7 +31,6 @@
     "nodemailer": "^9.0.5",
     "pdfkit": "^0.20.1",
     "qrcode": "^1.5.4",
-    "redis": "^6.2.1",
     "streamifier": "^0.1.1",
     "uuid": "^14.0.2"
   },

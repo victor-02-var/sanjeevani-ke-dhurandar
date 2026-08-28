@@ -1,93 +1,166 @@
 import http from 'http';
+import https from 'https';
 import fetch from 'node-fetch';
 
-// Create a persistent HTTP agent with a 60-second timeout to prevent socket hangups
-const osrmAgent = new http.Agent({
-  keepAlive: true,
-  timeout: 60000,
-});
-
-const OSRM_BASE_URL = process.env.OSRM_URL || 'http://localhost:5001';
+// Persistent HTTP agents
+const httpAgent  = new http.Agent({ keepAlive: true, timeout: 60000 });
+const httpsAgent = new https.Agent({ keepAlive: true, timeout: 60000 });
 
 /**
- * Safely fetches distance and duration matrices from OSRM by chunking 
- * if coordinates exceed OSRM safe URL length limits.
+ * OSRM base URL.
+ * - In production (self-hosted): set OSRM_URL=http://localhost:5001
+ * - In development / mock mode: defaults to the public OSRM demo server
  */
-export async function getDistanceAndDurationMatrices(locations) {
-  // Max safe points per OSRM table matrix call to avoid socket hang up
-  const MAX_CHUNK_SIZE = 30;
+const OSRM_BASE_URL = process.env.OSRM_URL || 'https://router.project-osrm.org';
 
-  if (locations.length <= MAX_CHUNK_SIZE) {
-    return await fetchFullMatrix(locations);
-  }
-
-  // Fallback for large fleets: process in chunks or generate fallback matrices
-  console.log(`⚠️ Large location count (${locations.length}). Processing via optimized matrix chunking...`);
-  return await fetchFullMatrix(locations);
+function getAgent(url) {
+  return url.startsWith('https') ? httpsAgent : httpAgent;
 }
 
-async function fetchFullMatrix(locations) {
-  const coordinates = locations.map(loc => `${loc.longitude},${loc.latitude}`).join(';');
-  const url = `${OSRM_BASE_URL}/table/v1/driving/${coordinates}?annotations=distance,duration`;
+/**
+ * Builds a straight-line GeoJSON LineString from an ordered list of locations.
+ * Used as a fallback when OSRM is unreachable.
+ */
+function straightLineFallback(locations) {
+  const coordinates = locations.map(loc => [
+    parseFloat(loc.longitude),
+    parseFloat(loc.latitude),
+  ]);
 
-  const response = await fetch(url, {
-    agent: osrmAgent,
-    headers: { 'Connection': 'keep-alive' }
-  });
-
-  if (!response.ok) {
-    throw new Error(`OSRM Table service returned status ${response.status}`);
-  }
-
-  const data = await response.json();
-
-  if (!data || !data.distances || !data.durations) {
-    throw new Error('Invalid matrix response from OSRM engine.');
+  // Very rough distance estimate using haversine between first and last point
+  let totalMeters = 0;
+  for (let i = 1; i < locations.length; i++) {
+    totalMeters += haversineMeters(
+      parseFloat(locations[i - 1].latitude), parseFloat(locations[i - 1].longitude),
+      parseFloat(locations[i].latitude),     parseFloat(locations[i].longitude)
+    );
   }
 
   return {
-    distanceMatrix: data.distances,
-    durationMatrix: data.durations
+    distanceMeters: Math.round(totalMeters),
+    durationSeconds: Math.round(totalMeters / 8), // ~28 km/h average city speed
+    geometry: { type: 'LineString', coordinates },
+    steps: [],
   };
 }
 
+function haversineMeters(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const φ1 = (lat1 * Math.PI) / 180;
+  const φ2 = (lat2 * Math.PI) / 180;
+  const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+  const Δλ = ((lng2 - lng1) * Math.PI) / 180;
+  const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 /**
- * Fetches precise route polyline and step navigation from OSRM route service
+ * Fetch distance + duration matrices from OSRM.
+ * Falls back to straight-line estimates if OSRM is unreachable.
+ */
+export async function getDistanceAndDurationMatrices(locations) {
+  try {
+    const coordinates = locations.map(l => `${l.longitude},${l.latitude}`).join(';');
+    const url = `${OSRM_BASE_URL}/table/v1/driving/${coordinates}?annotations=distance,duration`;
+
+    const response = await fetch(url, {
+      agent: getAgent(url),
+      headers: { 'Connection': 'keep-alive' },
+      timeout: 15000,
+    });
+
+    if (!response.ok) throw new Error(`OSRM table status ${response.status}`);
+
+    const data = await response.json();
+    if (!data?.distances || !data?.durations) throw new Error('Invalid OSRM matrix response');
+
+    return { distanceMatrix: data.distances, durationMatrix: data.durations };
+  } catch (err) {
+    console.warn(`⚠️ OSRM table unavailable (${err.message}). Using haversine straight-line fallback.`);
+
+    // Build NxN haversine matrix
+    const n = locations.length;
+    const distanceMatrix = Array.from({ length: n }, (_, i) =>
+      Array.from({ length: n }, (_, j) =>
+        i === j ? 0 : haversineMeters(
+          parseFloat(locations[i].latitude), parseFloat(locations[i].longitude),
+          parseFloat(locations[j].latitude), parseFloat(locations[j].longitude)
+        )
+      )
+    );
+    const durationMatrix = distanceMatrix.map(row => row.map(d => Math.round(d / 8)));
+
+    return { distanceMatrix, durationMatrix };
+  }
+}
+
+/**
+ * Fetch a precise driving polyline from OSRM for an ordered list of waypoints.
+ * Falls back to straight-line GeoJSON if OSRM is unreachable.
+ * Automatically chunks into segments of ≤ 25 waypoints to stay within URL limits.
  */
 export async function getRoutePolyline(waypoints) {
-  // OSRM route service safely handles waypoint arrays up to ~50 points
-  const coordString = waypoints.map(wp => `${wp.longitude},${wp.latitude}`).join(';');
-  const url = `${OSRM_BASE_URL}/route/v1/driving/${coordString}?overview=full&geometries=geojson&steps=true`;
-
-  const response = await fetch(url, {
-    agent: osrmAgent,
-    headers: { 'Connection': 'keep-alive' }
-  });
-
-  if (!response.ok) {
-    throw new Error(`OSRM Route service failed with status ${response.status}`);
+  if (!waypoints || waypoints.length < 2) {
+    return straightLineFallback(waypoints || []);
   }
 
-  const data = await response.json();
-
-  if (!data.routes || data.routes.length === 0) {
-    // Fallback straight line if OSRM route fails
-    return {
-      distanceMeters: 5000,
-      durationSeconds: 600,
-      geometry: {
-        type: 'LineString',
-        coordinates: waypoints.map(wp => [wp.longitude, wp.latitude])
-      },
-      steps: []
-    };
+  // Chunk waypoints into segments of max 25 to avoid URL length limits on public OSRM
+  const MAX_CHUNK = 25;
+  const chunks = [];
+  for (let i = 0; i < waypoints.length - 1; i += MAX_CHUNK - 1) {
+    chunks.push(waypoints.slice(i, i + MAX_CHUNK));
+    if (chunks[chunks.length - 1].length < 2) {
+      // Merge tiny tail into previous chunk
+      chunks[chunks.length - 2] = [...chunks[chunks.length - 2], ...chunks.pop()];
+    }
   }
 
-  const route = data.routes[0];
+  let totalDistance = 0;
+  let totalDuration = 0;
+  const allCoordinates = [];
+  const allSteps = [];
+
+  for (const chunk of chunks) {
+    const coordString = chunk.map(wp => `${wp.longitude},${wp.latitude}`).join(';');
+    const url = `${OSRM_BASE_URL}/route/v1/driving/${coordString}?overview=full&geometries=geojson&steps=false`;
+
+    try {
+      const response = await fetch(url, {
+        agent: getAgent(url),
+        headers: { 'Connection': 'keep-alive' },
+        timeout: 15000,
+      });
+
+      if (!response.ok) throw new Error(`OSRM route status ${response.status}`);
+
+      const data = await response.json();
+      if (!data?.routes?.length) throw new Error('No routes returned');
+
+      const route = data.routes[0];
+      totalDistance += route.distance || 0;
+      totalDuration += route.duration || 0;
+
+      const coords = route.geometry?.coordinates || chunk.map(wp => [wp.longitude, wp.latitude]);
+      // Avoid duplicating shared waypoints between chunks
+      allCoordinates.push(...(allCoordinates.length > 0 ? coords.slice(1) : coords));
+    } catch (chunkErr) {
+      console.warn(`⚠️ OSRM chunk failed (${chunkErr.message}). Using straight-line for this segment.`);
+      const fallback = straightLineFallback(chunk);
+      totalDistance += fallback.distanceMeters;
+      totalDuration += fallback.durationSeconds;
+      const coords = fallback.geometry.coordinates;
+      allCoordinates.push(...(allCoordinates.length > 0 ? coords.slice(1) : coords));
+    }
+  }
+
+  if (allCoordinates.length === 0) {
+    return straightLineFallback(waypoints);
+  }
+
   return {
-    distanceMeters: route.distance,
-    durationSeconds: route.duration,
-    geometry: route.geometry, // GeoJSON LineString format
-    steps: route.legs ? route.legs.flatMap(leg => leg.steps || []) : []
+    distanceMeters: Math.round(totalDistance),
+    durationSeconds: Math.round(totalDuration),
+    geometry: { type: 'LineString', coordinates: allCoordinates },
+    steps: allSteps,
   };
 }

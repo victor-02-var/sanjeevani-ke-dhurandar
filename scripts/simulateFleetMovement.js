@@ -1,5 +1,4 @@
 import { supabase } from '../src/config/supabase.js';
-import { redisClient } from '../src/config/redis.js';
 import fetch from 'node-fetch';
 
 const BACKEND_URL = 'http://localhost:5000/api';
@@ -33,8 +32,6 @@ function clampToTerritory(lat, lng, territory) {
 
 async function runStrictRouteSimulation() {
   console.log('🚀 Initializing Strict Route-Bound & Territory-Geofenced Simulation...');
-
-  if (!redisClient.isOpen) await redisClient.connect();
 
   // 1. Fetch active vehicles from database
   const { data: vehicles, error: vErr } = await supabase.from('vehicles').select('*');
@@ -71,8 +68,8 @@ async function runStrictRouteSimulation() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      depotLat: 19.9975,
-      depotLng: 73.7898,
+      depotLat: 19.892379,
+      depotLng: 74.484606,
       vehicles: vehiclesPayload,
       bins: bins || [],
     }),
@@ -150,24 +147,18 @@ async function runStrictRouteSimulation() {
         }
       }
 
-      // Step B: Push strictly geofenced, route-bound GPS coordinates into Redis
-      await redisClient.geoAdd('vehicles:locations', {
-        longitude: currLng,
-        latitude: currLat,
-        member: sim.vehicleId,
-      });
-
-      await redisClient.hSet(`vehicle:${sim.vehicleId}`, {
-        id: sim.vehicleId,
-        driver_name: sim.driverName,
-        latitude: currLat.toString(),
-        longitude: currLng.toString(),
-        speed: sim.speedKmh.toString(),
-        payload_kg: sim.currentPayloadKg.toString(),
-        capacity_kg: sim.maxCapacityKg.toString(),
-        status: sim.currentPayloadKg >= sim.maxCapacityKg ? 'Full' : 'In Service',
-        updated_at: new Date().toISOString(),
-      });
+      // Step B: Push GPS coordinates directly to Supabase
+      await supabase
+        .from('vehicles')
+        .update({
+          latitude: currLat,
+          longitude: currLng,
+          speed: sim.speedKmh,
+          current_load_kg: sim.currentPayloadKg,
+          status: sim.currentPayloadKg >= sim.maxCapacityKg ? 'Full' : 'In Service',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', sim.vehicleId);
 
       // Step C: Advance to next point on the exact OSRM polyline path (loops seamlessly)
       sim.currentIndex = (sim.currentIndex + 1) % sim.waypoints.length;
