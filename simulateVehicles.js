@@ -1,19 +1,19 @@
-import { redisClient } from './src/config/redis.js';
 import { supabase } from './src/config/supabase.js';
 
 async function startGpsSimulation() {
   console.log('🚀 GPS Vehicle Simulation Engine Started!');
-  console.log('🛰️ Updating truck coordinates in Redis every 3 seconds...\n');
+  console.log('🛰️ Updating truck coordinates in Supabase every 3 seconds...\n');
 
   setInterval(async () => {
     try {
-      const keys = await redisClient.keys('vehicle:*');
+      const { data: vehicles, error } = await supabase
+        .from('vehicles')
+        .select('id, latitude, longitude, status');
 
-      for (const key of keys) {
-        const vehicle = await redisClient.hGetAll(key);
+      if (error) throw error;
 
-        if (vehicle && vehicle.status === 'Collecting') {
-          // Calculate slight latitude and longitude step changes (simulate driving)
+      for (const vehicle of vehicles) {
+        if (vehicle.status === 'Collecting') {
           const deltaLat = (Math.random() - 0.48) * 0.0008;
           const deltaLng = (Math.random() - 0.48) * 0.0008;
 
@@ -22,22 +22,6 @@ async function startGpsSimulation() {
           const newSpeed = Math.floor(Math.random() * 25) + 15; // Speed between 15 - 40 km/h
           const now = new Date().toISOString();
 
-          // 1. Update Redis Geospatial set
-          await redisClient.geoAdd('vehicles:locations', {
-            longitude: newLng,
-            latitude: newLat,
-            member: vehicle.id
-          });
-
-          // 2. Update Redis vehicle hash
-          await redisClient.hSet(key, {
-            latitude: newLat.toString(),
-            longitude: newLng.toString(),
-            speed: newSpeed.toString(),
-            updated_at: now
-          });
-
-          // 3. Periodically sync back to Supabase DB
           await supabase
             .from('vehicles')
             .update({

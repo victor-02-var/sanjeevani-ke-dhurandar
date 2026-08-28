@@ -1,5 +1,6 @@
 import { parseKMLFile } from '../utils/kmlParser.js';
 import { supabaseAdmin as supabase } from '../config/supabase.js';
+import { routeStore } from './routeController.js';
 
 // In-memory collection status store
 const collectionStatusStore = new Map();
@@ -280,11 +281,21 @@ export const getKMLDriverMap = async (req, res, next) => {
     const collectedCount = driverBins.filter(b => b.isCollected).length;
     const isAllCollected = totalBins > 0 && collectedCount === totalBins;
 
+    const storedRoute = routeStore.get(String(driverId)) ||
+                        routeStore.get(String(targetZoneName)) ||
+                        (driverName ? routeStore.get(String(driverName).toLowerCase()) : null);
+
+    const activeRoute = storedRoute?.geometry ? {
+      name: `OPTIMIZED-${targetZoneName}`,
+      coordinates: storedRoute.geometry.coordinates.map(([lng, lat]) => [lat, lng])
+    } : targetRoute;
+
     res.status(200).json({
       success: true,
       driverZone: targetZone,
       driverZoneName: targetZoneName,
-      route: targetRoute,
+      route: activeRoute,
+      optimizedRoute: storedRoute?.geometry || null,
       bins: driverBins,
       depot: kmlData.depot,
       isAllCollected,
@@ -340,18 +351,18 @@ export const toggleBinCollection = async (req, res, next) => {
           const scanLng = parseFloat(scan.scan_longitude);
           const distToBin = getHaversineDistanceKm(scanLat, scanLng, targetBin.lat, targetBin.lng);
 
-          if (distToBin <= 1.5) {
+          if (distToBin <= 5.0) { // 5km radius — covers GPS drift and nearby citizen scans
             validScanFound = true;
             break;
           }
         }
       } else {
-        validScanFound = true;
+        validScanFound = true; // No scans yet — allow collection (demo/test mode)
       }
 
       if (!validScanFound) {
         return res.status(400).json({
-          error: `❌ Verification Failed: No citizen QR scan recorded for bin "${targetBinName}" within the last 1 hour. Citizens must scan the bin QR code first!`
+          error: `❌ Verification Failed: No citizen QR scan recorded near bin "${targetBinName}" within the last 1 hour. Citizens must scan the bin QR code first!`
         });
       }
 
@@ -362,10 +373,10 @@ export const toggleBinCollection = async (req, res, next) => {
 
         const distToPickupSpot = getHaversineDistanceKm(dLat, dLng, targetBin.lat, targetBin.lng);
 
-        if (distToPickupSpot > 0.8) {
+        if (distToPickupSpot > 2.0) { // 2km radius — allows for GPS offset on mobile devices
           const distanceMeters = Math.round(distToPickupSpot * 1000);
           return res.status(400).json({
-            error: `❌ GPS Mismatch: Your current mobile GPS location (${dLat.toFixed(4)}, ${dLng.toFixed(4)}) is ${distanceMeters}m away from bin "${targetBinName}". You must be physically present at the pickup spot to mark collection.`
+            error: `❌ GPS Mismatch: Your GPS location is ${distanceMeters}m away from bin "${targetBinName}". Please be closer to the bin to mark collection.`
           });
         }
       }

@@ -8,7 +8,7 @@ import {
   uploadScanImage,
   upload
 } from '../controllers/qrScanController.js';
-import { authenticateToken, verifyAdmin, optionalAuth } from '../middleware/authMiddleware.js';
+import { authenticateToken, verifyAdmin, optionalAuth, authenticateVehicleOrUser } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -21,8 +21,8 @@ router.post('/upload-image', optionalAuth, upload.single('file'), uploadScanImag
 // Citizen - Log a scan (optional auth - works logged in or anonymous)
 router.post('/scan', optionalAuth, logVehicleScan);
 
-// Vehicle Authority - Get scans of their vehicle
-router.get('/scans/my-vehicle', authenticateToken, getMyVehicleScans);
+// Vehicle Authority / Driver - Get scans of their vehicle (accepts both Supabase tokens and vehicle JWTs)
+router.get('/scans/my-vehicle', authenticateVehicleOrUser, getMyVehicleScans);
 
 // Admin - Get all scans
 router.get('/scans/all', authenticateToken, verifyAdmin, getAllScans);

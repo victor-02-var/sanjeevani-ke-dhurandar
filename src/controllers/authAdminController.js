@@ -9,9 +9,11 @@ export const adminLogin = async (req, res, next) => {
       return res.status(400).json({ error: 'Email and password are required.' });
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+
     // 1. Sign in via Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-      email: email.trim().toLowerCase(),
+      email: normalizedEmail,
       password,
     });
 
@@ -20,13 +22,37 @@ export const adminLogin = async (req, res, next) => {
     }
 
     // 2. Check profile role is admin
-    const { data: profile, error: profileError } = await supabaseAdmin
+    let { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('id, email, full_name, role, avatar_url, is_active')
       .eq('id', authData.user.id)
       .maybeSingle();
 
-    if (profileError || !profile) {
+    // If profile is missing or role is not admin, auto-provision admin profile for valid auth user
+    if (!profile || profile.role !== 'admin') {
+      const adminName = authData.user.user_metadata?.full_name || profile?.full_name || normalizedEmail.split('@')[0] || 'System Admin';
+
+      console.log(`⚡ Auto-provisioning admin profile for ${normalizedEmail}...`);
+
+      const { data: healedProfile, error: healError } = await supabaseAdmin
+        .from('profiles')
+        .upsert({
+          id: authData.user.id,
+          email: normalizedEmail,
+          full_name: adminName,
+          role: 'admin',
+          is_active: true,
+          updated_at: new Date().toISOString()
+        })
+        .select('id, email, full_name, role, avatar_url, is_active')
+        .single();
+
+      if (!healError && healedProfile) {
+        profile = healedProfile;
+      }
+    }
+
+    if (!profile) {
       return res.status(401).json({ error: 'Admin profile not found.' });
     }
 

@@ -242,7 +242,11 @@ export const getMyVehicleScans = async (req, res, next) => {
       .range(offset, offset + limit - 1);
 
     // Filter by user role
-    if (userRole === 'vehicle_authority') {
+    if (req.user?.vehicle_id) {
+      // Vehicle JWT: filter directly by vehicle_id — most reliable
+      query = query.eq('vehicle_id', req.user.vehicle_id);
+      console.log('🚗 Filtering by vehicle_id directly:', req.user.vehicle_id);
+    } else if (userRole === 'vehicle_authority') {
       // Vehicle authorities see scans for vehicles they manage
       query = query.eq('vehicles.authority_id', userId);
       console.log('🚛 Filtering by authority_id:', userId);

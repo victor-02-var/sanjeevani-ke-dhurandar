@@ -1,9 +1,8 @@
 import { supabase } from './src/config/supabase.js';
-import { redisClient } from './src/config/redis.js';
 import { generateMockVehicles } from './src/utils/mockVehicleGenerator.js';
 
 async function seedVehicles() {
-  console.log('⌛ Seeding 8 garbage trucks...');
+  console.log('⌛ Seeding 8 garbage trucks into Supabase...');
   const mockVehicles = generateMockVehicles();
 
   // Clear existing vehicles
@@ -20,29 +19,7 @@ async function seedVehicles() {
     process.exit(1);
   }
 
-  console.log('⌛ Syncing vehicles into Redis Geospatial Store...');
-
-  for (const v of vehicles) {
-    // 1. Add coordinates to Redis GEO spatial set
-    await redisClient.geoAdd('vehicles:locations', {
-      longitude: v.longitude,
-      latitude: v.latitude,
-      member: v.id
-    });
-
-    // 2. Cache full vehicle telemetry hash in Redis
-    await redisClient.hSet(`vehicle:${v.id}`, {
-      id: v.id,
-      driver_name: v.driver_name,
-      latitude: v.latitude.toString(),
-      longitude: v.longitude.toString(),
-      speed: v.speed.toString(),
-      status: v.status,
-      updated_at: new Date().toISOString()
-    });
-  }
-
-  console.log('✅ Successfully seeded vehicles to Supabase and Redis!');
+  console.log(`✅ Successfully seeded ${vehicles.length} vehicles to Supabase!`);
   process.exit(0);
 }
 

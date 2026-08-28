@@ -1,58 +1,25 @@
 import { supabaseAdmin as supabase } from '../config/supabase.js';
 import { supabaseAdmin } from '../config/supabase.js';
-import { redisClient } from '../config/redis.js';
 import bcrypt from 'bcrypt';
 
-// GET /api/vehicles - Fetch real-time live positions of all vehicles from Redis
+// GET /api/vehicles - Fetch all vehicles from Supabase
 export const getAllVehicles = async (req, res, next) => {
   try {
-    const keys = await redisClient.keys('vehicle:*');
-
-    if (keys.length === 0) {
-      const { data: dbVehicles, error } = await supabase.from('vehicles').select('*');
-      if (error) throw error;
-      return res.status(200).json({ count: dbVehicles.length, source: 'database', vehicles: dbVehicles });
-    }
-
-    const vehicles = [];
-    for (const key of keys) {
-      const vehicleData = await redisClient.hGetAll(key);
-      if (vehicleData && vehicleData.id) {
-        vehicles.push({
-          ...vehicleData,
-          latitude: parseFloat(vehicleData.latitude),
-          longitude: parseFloat(vehicleData.longitude),
-          speed: parseFloat(vehicleData.speed)
-        });
-      }
-    }
-
-    res.status(200).json({ count: vehicles.length, source: 'redis_cache', vehicles });
+    const { data: vehicles, error } = await supabase.from('vehicles').select('*');
+    if (error) throw error;
+    return res.status(200).json({ count: vehicles.length, source: 'database', vehicles });
   } catch (err) {
     next(err);
   }
 };
 
-// GET /api/vehicles/:id - Fetch single vehicle live metrics
+// GET /api/vehicles/:id - Fetch single vehicle details
 export const getVehicleById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const vehicleData = await redisClient.hGetAll(`vehicle:${id}`);
-
-    if (!vehicleData || !vehicleData.id) {
-      const { data: dbVehicle, error } = await supabase.from('vehicles').select('*').eq('id', id).single();
-      if (error || !dbVehicle) return res.status(404).json({ error: 'Vehicle not found' });
-      return res.status(200).json({ vehicle: dbVehicle });
-    }
-
-    res.status(200).json({
-      vehicle: {
-        ...vehicleData,
-        latitude: parseFloat(vehicleData.latitude),
-        longitude: parseFloat(vehicleData.longitude),
-        speed: parseFloat(vehicleData.speed)
-      }
-    });
+    const { data: vehicle, error } = await supabase.from('vehicles').select('*').eq('id', id).single();
+    if (error || !vehicle) return res.status(404).json({ error: 'Vehicle not found' });
+    return res.status(200).json({ vehicle });
   } catch (err) {
     next(err);
   }
@@ -181,9 +148,6 @@ export const deleteVehicle = async (req, res, next) => {
 
     const { error } = await supabase.from('vehicles').delete().eq('id', id);
     if (error) throw error;
-
-    // Also remove from Redis if cached
-    await redisClient.del(`vehicle:${id}`).catch(() => {});
 
     res.status(200).json({ message: `Vehicle ${id} deleted successfully.` });
   } catch (err) {

@@ -1,5 +1,4 @@
 import { supabaseAdmin } from '../config/supabase.js';
-import { redisClient } from '../config/redis.js';
 
 // GET /api/vehicle-authority/vehicles - Get all vehicles managed by this authority
 export const getManagedVehicles = async (req, res, next) => {
@@ -19,31 +18,9 @@ export const getManagedVehicles = async (req, res, next) => {
 
     if (error) throw error;
 
-    // Try to enrich with Redis real-time data
-    const enrichedVehicles = await Promise.all(
-      vehicles.map(async (vehicle) => {
-        try {
-          const liveData = await redisClient.hGetAll(`vehicle:${vehicle.id}`);
-          if (liveData && liveData.id) {
-            return {
-              ...vehicle,
-              latitude: parseFloat(liveData.latitude || vehicle.latitude),
-              longitude: parseFloat(liveData.longitude || vehicle.longitude),
-              speed: parseFloat(liveData.speed || vehicle.speed),
-              current_load_kg: parseFloat(liveData.current_load_kg || vehicle.current_load_kg),
-              live_data: true,
-            };
-          }
-        } catch (err) {
-          // If Redis fails, just return DB data
-        }
-        return { ...vehicle, live_data: false };
-      })
-    );
-
     res.status(200).json({
-      count: enrichedVehicles.length,
-      vehicles: enrichedVehicles,
+      count: vehicles.length,
+      vehicles,
     });
   } catch (err) {
     next(err);
@@ -70,20 +47,6 @@ export const getVehicleDetails = async (req, res, next) => {
 
     if (error || !vehicle) {
       return res.status(404).json({ error: 'Vehicle not found or access denied.' });
-    }
-
-    // Try to get live data from Redis
-    try {
-      const liveData = await redisClient.hGetAll(`vehicle:${id}`);
-      if (liveData && liveData.id) {
-        vehicle.latitude = parseFloat(liveData.latitude || vehicle.latitude);
-        vehicle.longitude = parseFloat(liveData.longitude || vehicle.longitude);
-        vehicle.speed = parseFloat(liveData.speed || vehicle.speed);
-        vehicle.current_load_kg = parseFloat(liveData.current_load_kg || vehicle.current_load_kg);
-        vehicle.live_data = true;
-      }
-    } catch (err) {
-      vehicle.live_data = false;
     }
 
     res.status(200).json({ vehicle });
