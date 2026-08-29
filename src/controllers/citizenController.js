@@ -120,11 +120,15 @@ export const getCitizenProfile = async (req, res, next) => {
       .select('id', { count: 'exact', head: true })
       .eq('citizen_id', userId);
 
-    const { count: resolvedCount } = await supabase
+    const { data: citizenComplaints = [] } = await supabase
       .from('complaints')
-      .select('id', { count: 'exact', head: true })
-      .eq('citizen_id', userId)
-      .eq('status', 'Resolved');
+      .select('status')
+      .eq('citizen_id', userId);
+
+    const resolvedCount = (citizenComplaints || []).filter((complaint) => {
+      const status = String(complaint.status || '').trim().toLowerCase();
+      return ['resolved', 'solved', 'closed', 'completed', 'cleaned', 'fixed', 'done'].includes(status);
+    }).length;
 
     res.status(200).json({
       profile: {
