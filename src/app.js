@@ -49,6 +49,7 @@ const allowedOrigins = [
   "https://civic-sync-citizen-dashboard.vercel.app",
   "https://civic-sync-admin-dashboard-25qxuhdz0-aditya-031e.vercel.app",
   "https://route-chief-615toe3li-aditya-031e.vercel.app",
+  "https://pratik2552-route-chief-app.civicsync-route-chief.workers.dev",
 
   process.env.FRONTEND_URL
 ].filter(Boolean);
