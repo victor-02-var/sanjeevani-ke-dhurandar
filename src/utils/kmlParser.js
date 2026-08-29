@@ -42,14 +42,29 @@ function isPointInPolygon(point, polygon) {
   return inside;
 }
 
-export function parseKMLFile(filePath = 'D:/mapping3.kml') {
+export function parseKMLFile(filePath = 'mapping3.kml') {
   try {
     let resolvedPath = path.resolve(filePath);
+    
+    // Check if resolved path exists in process.cwd() or relative path
     if (!fs.existsSync(resolvedPath)) {
-      if (fs.existsSync('D:/mapping3.kml')) {
-        resolvedPath = path.resolve('D:/mapping3.kml');
+      const localMapping3 = path.join(process.cwd(), 'mapping3.kml');
+      const localMapping = path.join(process.cwd(), 'mapping.kml');
+      
+      if (fs.existsSync(localMapping3)) {
+        resolvedPath = localMapping3;
+      } else if (fs.existsSync(localMapping)) {
+        resolvedPath = localMapping;
+      } else if (fs.existsSync('D:/mapping3.kml')) {
+        resolvedPath = 'D:/mapping3.kml';
       } else if (fs.existsSync('D:/mapping.kml')) {
-        resolvedPath = path.resolve('D:/mapping.kml');
+        resolvedPath = 'D:/mapping.kml';
+      } else {
+        // Look inside src folder if running from root
+        const srcMapping3 = path.join(process.cwd(), 'src', 'mapping3.kml');
+        if (fs.existsSync(srcMapping3)) {
+          resolvedPath = srcMapping3;
+        }
       }
     }
 

@@ -357,7 +357,13 @@ export const toggleBinCollection = async (req, res, next) => {
           }
         }
       } else {
-        validScanFound = true; // No scans yet — allow collection (demo/test mode)
+        // Special mapping demonstration override:
+        // Only BIN-001 is mapped and allowed without prior scan, other bins require scan first
+        if (targetBinName === 'BIN-001') {
+          validScanFound = true;
+        } else {
+          validScanFound = false;
+        }
       }
 
       if (!validScanFound) {
@@ -368,8 +374,15 @@ export const toggleBinCollection = async (req, res, next) => {
 
       // Check Driver Mobile GPS Proximity
       if (driverLat !== undefined && driverLng !== undefined && driverLat !== null && driverLng !== null) {
-        const dLat = parseFloat(driverLat);
-        const dLng = parseFloat(driverLng);
+        let dLat = parseFloat(driverLat);
+        let dLng = parseFloat(driverLng);
+
+        // Special demonstration override for BIN-001:
+        // Automatically match driver location with BIN-001 coordinates to bypass lack of GPS hardware
+        if (targetBinName === 'BIN-001') {
+          dLat = targetBin.lat;
+          dLng = targetBin.lng;
+        }
 
         const distToPickupSpot = getHaversineDistanceKm(dLat, dLng, targetBin.lat, targetBin.lng);
 
@@ -377,6 +390,13 @@ export const toggleBinCollection = async (req, res, next) => {
           const distanceMeters = Math.round(distToPickupSpot * 1000);
           return res.status(400).json({
             error: `❌ GPS Mismatch: Your GPS location is ${distanceMeters}m away from bin "${targetBinName}". Please be closer to the bin to mark collection.`
+          });
+        }
+      } else {
+        // If driver location is not provided, only allow BIN-001 to bypass
+        if (targetBinName !== 'BIN-001') {
+          return res.status(400).json({
+            error: `❌ GPS Mismatch: Driver coordinates not mapped to bin "${targetBinName}".`
           });
         }
       }
