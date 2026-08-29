@@ -43,9 +43,9 @@ const allowedOrigins = [
   'http://127.0.0.1:8080',
   'http://127.0.0.1:5173',
   'http://127.0.0.1:5174',
-  "https://frontend-admin-red-nine.vercel.app/",
-  "https://citizen-frontend-lemon.vercel.app/",
-  "https://driver-jet.vercel.app/",
+  "https://frontend-admin-red-nine.vercel.app",
+  "https://citizen-frontend-lemon.vercel.app",
+  "https://driver-jet.vercel.app",
 
   process.env.FRONTEND_URL
 ].filter(Boolean);
@@ -110,6 +110,37 @@ app.use('/api/qr-scan', qrScanRoutes);
 app.use('/api/kml', kmlRoutes);
 app.use('/api/dead-animal-reports', deadAnimalRoutes);
 // app.use('/api/dashboard', dashboardRoutes);
+
+// Root health check — shows when visiting the backend URL directly in a browser
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'online',
+    message: '🚀 CivicSync Backend API is running!',
+    version: '1.0.0',
+    environment: process.env.NODE_ENV || 'development',
+    endpoints: {
+      auth: '/api/auth',
+      bins: '/api/bins',
+      vehicles: '/api/vehicles',
+      complaints: '/api/complaints',
+      carbonPoints: '/api/carbon-points',
+      kml: '/api/kml',
+      qr: '/api/qr',
+      tracking: '/api/tracking',
+      deadAnimalReports: '/api/dead-animal-reports',
+    },
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// API health check endpoint
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+  });
+});
 
 // Global Error Handler (MUST BE LAST)
 app.use(errorHandler);
