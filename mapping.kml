@@ -1,0 +1,791 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document id="1ZH93bk77fgydnMPJLap5pOl9HkGD9KF6">
+	<name>Untitled map project</name>
+	<gx:CascadingStyle kml:id="__managed_style_053AF0A2BF417332512B_normal">
+		<Style>
+			<IconStyle>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ffbc47ab</color>
+				<width>3.2</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_03B08C9C6F4173316200_highlight">
+		<Style>
+			<IconStyle>
+				<scale>1.2</scale>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ffd27619</color>
+				<width>4.8</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_192CF9805F4173316204_highlight">
+		<Style>
+			<IconStyle>
+				<scale>1.2</scale>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff0000e6</color>
+				<width>4.8</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<StyleMap id="__managed_style_03B08C9C6F4173316200">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#__managed_style_03B08C9C6F4173316200_normal</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#__managed_style_03B08C9C6F4173316200_highlight</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="__managed_style_02A20168D94173316204">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#__managed_style_02A20168D94173316204_normal</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#__managed_style_02A20168D94173316204_highlight</styleUrl>
+		</Pair>
+	</StyleMap>
+	<gx:CascadingStyle kml:id="__managed_style_063745CB7A4173316203_highlight">
+		<styleUrl>https://earth.google.com/balloon_components/base/1.1.0.0/card_template.kml#main</styleUrl>
+		<Style>
+			<IconStyle>
+				<scale>1.2</scale>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=000000&amp;id=2371&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2dc0fb</color>
+				<width>4.8</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_0CE31429574173316208_normal">
+		<styleUrl>https://earth.google.com/balloon_components/base/1.1.0.0/card_template.kml#main</styleUrl>
+		<Style>
+			<IconStyle>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2dc0fb</color>
+				<width>3.2</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<StyleMap id="__managed_style_063745CB7A4173316203">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#__managed_style_063745CB7A4173316203_normal</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#__managed_style_063745CB7A4173316203_highlight</styleUrl>
+		</Pair>
+	</StyleMap>
+	<gx:CascadingStyle kml:id="__managed_style_02A20168D94173316204_highlight">
+		<Style>
+			<IconStyle>
+				<scale>1.2</scale>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2dc0fb</color>
+				<width>4.8</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_08E235FD0D4173316206_highlight">
+		<Style>
+			<IconStyle>
+				<scale>1.2</scale>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2127&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2dc0fb</color>
+				<width>4.8</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_02A20168D94173316204_normal">
+		<Style>
+			<IconStyle>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2dc0fb</color>
+				<width>3.2</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_08E235FD0D4173316206_normal">
+		<Style>
+			<IconStyle>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2127&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2dc0fb</color>
+				<width>3.2</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<StyleMap id="__managed_style_1777B73E4E4173316200">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#__managed_style_1777B73E4E4173316200_normal</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#__managed_style_1777B73E4E4173316200_highlight</styleUrl>
+		</Pair>
+	</StyleMap>
+	<gx:CascadingStyle kml:id="__managed_style_053AF0A2BF417332512B_highlight">
+		<Style>
+			<IconStyle>
+				<scale>1.2</scale>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ffbc47ab</color>
+				<width>4.8</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_1777B73E4E4173316200_normal">
+		<styleUrl>https://earth.google.com/balloon_components/base/1.1.0.0/card_template.kml#main</styleUrl>
+		<Style>
+			<IconStyle>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff3c8e38</color>
+				<width>3.2</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>4058eeff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<StyleMap id="__managed_style_08E235FD0D4173316206">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#__managed_style_08E235FD0D4173316206_normal</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#__managed_style_08E235FD0D4173316206_highlight</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="__managed_style_0CE31429574173316208">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#__managed_style_0CE31429574173316208_normal</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#__managed_style_0CE31429574173316208_highlight</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="__managed_style_053AF0A2BF417332512B">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#__managed_style_053AF0A2BF417332512B_normal</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#__managed_style_053AF0A2BF417332512B_highlight</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="__managed_style_192CF9805F4173316204">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#__managed_style_192CF9805F4173316204_normal</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#__managed_style_192CF9805F4173316204_highlight</styleUrl>
+		</Pair>
+	</StyleMap>
+	<gx:CascadingStyle kml:id="__managed_style_0EDE7CD13341733161FC_normal">
+		<Style>
+			<IconStyle>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2dc0fb</color>
+				<width>3.2</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_0EDE7CD13341733161FC_highlight">
+		<Style>
+			<IconStyle>
+				<scale>1.2</scale>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2dc0fb</color>
+				<width>4.8</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_192CF9805F4173316204_normal">
+		<Style>
+			<IconStyle>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff0000e6</color>
+				<width>3.2</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_03B08C9C6F4173316200_normal">
+		<Style>
+			<IconStyle>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ffd27619</color>
+				<width>3.2</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_0CE31429574173316208_highlight">
+		<styleUrl>https://earth.google.com/balloon_components/base/1.1.0.0/card_template.kml#main</styleUrl>
+		<Style>
+			<IconStyle>
+				<scale>1.2</scale>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2dc0fb</color>
+				<width>4.8</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_1777B73E4E4173316200_highlight">
+		<styleUrl>https://earth.google.com/balloon_components/base/1.1.0.0/card_template.kml#main</styleUrl>
+		<Style>
+			<IconStyle>
+				<scale>1.2</scale>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff3c8e38</color>
+				<width>4.8</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>4058eeff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_063745CB7A4173316203_normal">
+		<styleUrl>https://earth.google.com/balloon_components/base/1.1.0.0/card_template.kml#main</styleUrl>
+		<Style>
+			<IconStyle>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=000000&amp;id=2371&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2dc0fb</color>
+				<width>3.2</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<StyleMap id="__managed_style_0EDE7CD13341733161FC">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#__managed_style_0EDE7CD13341733161FC_normal</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#__managed_style_0EDE7CD13341733161FC_highlight</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Folder id="5E50AF74A3000001">
+		<name>route</name>
+		<open>1</open>
+		<styleUrl>#__managed_style_0EDE7CD13341733161FC</styleUrl>
+	</Folder>
+	<Folder id="5E50B3CBAD000001">
+		<name>route</name>
+		<open>1</open>
+		<styleUrl>#__managed_style_0EDE7CD13341733161FC</styleUrl>
+		<Folder id="5E50B3CBAE000002">
+			<name>Tracks</name>
+			<styleUrl>#__managed_style_0EDE7CD13341733161FC</styleUrl>
+			<Placemark id="5E50B3CBAE000003">
+				<name>Google Maps Route</name>
+				<snippet></snippet>
+				<description>&amp;nbsp;</description>
+				<styleUrl>#__managed_style_192CF9805F4173316204</styleUrl>
+				<LineString>
+					<tessellate>1</tessellate>
+					<coordinates>
+						74.48671,19.89528,0 74.48718,19.8955,0 74.48878000000001,19.8962,0 74.48895,19.89628,0 74.48924,19.89641,0 74.48989,19.89671,0 74.49027,19.89688,0 74.4906,19.89704,0 74.49066999999999,19.89707,0 74.49072,19.89709,0 74.49146,19.89743,0 74.49169999999999,19.89754,0 74.49177,19.89757,0 74.49209,19.89772,0 74.49236999999999,19.89784,0 74.49239129243352,19.89780350278496,0 74.49245677456038,19.89763272279442,0 74.49278315870438,19.89671779940619,0 74.4942424209065,19.89735726226171,0 74.49553744028418,19.89781765826345,0 74.4948,19.89989,0 74.49491,19.90002,0 74.49496000000001,19.90045,0 74.49507,19.90062,0 74.49503,19.90066,0 74.49502,19.90067,0 74.49500999999999,19.90069,0 74.49499,19.90069,0 74.49491999999999,19.9007,0 74.49499,19.90069,0 74.49500999999999,19.90069,0 74.49502,19.90067,0 74.49503,19.90066,0 74.49507,19.90062,0 74.49496000000001,19.90045,0 74.49491,19.90002,0 74.49518,19.9003,0 74.49523000000001,19.90026,0 74.49494,19.89998,0 74.49485,19.89987,0 74.4948,19.89989,0 74.49457,19.89985,0 74.49436,19.89984,0 74.49419,19.89984,0 74.49381,19.89985,0 74.49368,19.89985,0 74.49362000000001,19.89985,0 74.49355,19.89986,0 74.49344000000001,19.89988,0 74.4933,19.89996,0 74.49321,19.90002,0 74.4931,19.90009,0 74.49302,19.90016,0 74.49294,19.90023,0 74.49285,19.90031,0 74.4928,19.90038,0 74.49272999999999,19.90048,0 74.49272000000001,19.90051,0 74.49262,19.90072,0 74.49252,19.90098,0 74.49249,19.90105,0 74.49245999999999,19.90116,0 74.49243,19.90132,0 74.49243,19.90141,0 74.49243,19.90151,0 74.49242,19.9016,0 74.4924,19.90177,0 74.49236999999999,19.90192,0 74.49232000000001,19.90204,0 74.49225,19.90219,0 74.49224,19.9022,0 74.49216,19.90236,0 74.49209999999999,19.90248,0 74.49204,19.90259,0 74.49195,19.90276,0 74.49191999999999,19.9029,0 74.49189,19.90309,0 74.49187999999999,19.90321,0 74.49187999999999,19.90331,0 74.49187000000001,19.90339,0 74.49187000000001,19.90344,0 74.49187000000001,19.9035,0 74.49189,19.90363,0 74.49199,19.90392,0 74.49205000000001,19.90411,0 74.49213,19.90426,0 74.49216,19.90433,0 74.49218999999999,19.90441,0 74.49225,19.90458,0 74.49227999999999,19.90469,0 74.49218,19.90463,0 74.49215,19.90461,0 74.49213,19.90459,0 74.49211,19.90458,0 74.49209999999999,19.90458,0 74.49207,19.90458,0 74.49205000000001,19.90458,0 74.49202,19.90458,0 74.492,19.90459,0 74.49198,19.90461,0 74.49191,19.90468,0 74.49187999999999,19.90472,0 74.49187000000001,19.90474,0 74.49185,19.90478,0 74.49181,19.90485,0 74.49178999999999,19.9049,0 74.49176,19.90494,0 74.49171,19.905,0 74.49163,19.90508,0 74.49162,19.90508,0 74.49133999999999,19.90519,0 74.49099,19.90523,0 74.49039396384156,19.90521878376721,0 74.49037227204859,19.9047188449468,0 74.49035058039267,19.90421890612376,0 74.49006091322475,19.90421384966806,0 74.48977124607535,19.90420879274356,0 74.48976062307297,19.9047343963721,0 74.48975,19.90526,0 74.48939,19.90528,0 74.4888,19.90532,0 74.48860999999999,19.90532,0 74.48862,19.90509,0 74.48864,19.90493,0 74.48819,19.90493,0 74.48820000000001,19.90485,0 74.48819,19.90473,0 74.48821,19.90468,0 74.48822,19.90464,0 74.48824999999999,19.90456,0 74.48827,19.90451,0 74.48833999999999,19.90438,0 74.48833999999999,19.90437,0 74.48836,19.90436,0 74.48838000000001,19.90434,0 74.4884,19.90432,0 74.48842,19.9043,0 74.48846,19.90427,0 74.4885,19.90425,0 74.48865000000001,19.90416,0 74.48869000000001,19.90414,0 74.48871,19.90411,0 74.48872,19.90409,0 74.48872,19.90407,0 74.48872,19.90405,0 74.48872,19.90404,0 74.48872,19.90403,0 74.48871,19.90401,0 74.48866,19.90398,0 74.48864,19.90395,0 74.48863,19.90393,0 74.48862,19.90391,0 74.48862,19.9039,0 74.48860999999999,19.90387,0 74.48860999999999,19.90384,0 74.48862,19.90374,0 74.48860999999999,19.90368,0 74.48839,19.90369,0 74.48836,19.90369,0 74.48839,19.90369,0 74.48860999999999,19.90368,0 74.48860000000001,19.9035,0 74.48859,19.90344,0 74.48858,19.90328,0 74.48858,19.90324,0 74.48856000000001,19.90305,0 74.48856000000001,19.90303,0 74.48855,19.90292,0 74.48855,19.90284,0 74.48854,19.90269,0 74.48853,19.90242,0 74.48835,19.90243,0 74.48832,19.90215,0 74.48832,19.90213,0 74.4883,19.90192,0 74.48824999999999,19.90155,0 74.48823086218307,19.90122802157024,0 74.48823900628737,19.90071801918647,0 74.48815,19.90048,0 74.48813,19.90016,0 74.48811000000001,19.89988,0 74.48809,19.89944,0 74.48795,19.89938,0 74.48788999999999,19.89935,0 74.48786,19.89933,0 74.48783,19.8993,0 74.48782,19.89928,0 74.48779,19.89916,0 74.48775999999999,19.89905,0 74.48775000000001,19.89901,0 74.48757000000001,19.89901,0 74.48775000000001,19.89901,0 74.48775000000001,19.89898,0 74.48786,19.89899,0 74.48799,19.89899,0 74.48809,19.89899,0 74.48815999999999,19.89899,0 74.48822,19.89898,0 74.48824999999999,19.89896,0 74.48828,19.89895,0 74.48831,19.89894,0 74.48836,19.89895,0 74.4884,19.89896,0 74.48846,19.89897,0 74.48851999999999,19.89897,0 74.48854,19.89897,0 74.48860000000001,19.89896,0 74.48867,19.89892,0 74.48872,19.89889,0 74.48878000000001,19.89887,0 74.48882,19.89886,0 74.48887000000001,19.89886,0 74.48891,19.89886,0 74.48903079827207,19.89881105962644,0 74.48908,19.89879,0 74.48908,19.89878,0 74.48909999999999,19.89877,0 74.48913,19.89872,0 74.48915,19.89871,0 74.48917,19.89869,0 74.48918,19.89866,0 74.48918999999999,19.89865,0 74.4892,19.89863,0 74.48921,19.89861,0 74.48923000000001,19.89861,0 74.48924,19.8986,0 74.48926,19.89859,0 74.48927,19.89859,0 74.48945999999999,19.89858,0 74.48948,19.89874,0 74.48979,19.89872,0 74.48981999999999,19.89861,0 74.48983,19.89852,0 74.49006,19.89859,0 74.49071534232255,19.89871370240821,0 74.49084190831744,19.89858653943897,0 74.49106999999999,19.89811,0 74.4911,19.89805,0 74.49126,19.89778,0 74.49127,19.89777,0 74.49146,19.89743,0 74.49147000000001,19.89739,0 
+					</coordinates>
+				</LineString>
+			</Placemark>
+			<Placemark id="0950FE911941730CF60B">
+				<name>DEPOT</name>
+				<LookAt>
+					<longitude>74.4821294841164</longitude>
+					<latitude>19.90223714481856</latitude>
+					<altitude>526.1670016532056</altitude>
+					<heading>27.09625468570105</heading>
+					<tilt>0</tilt>
+					<gx:fovy>34.99999601</gx:fovy>
+					<range>3975.962529225508</range>
+					<altitudeMode>absolute</altitudeMode>
+				</LookAt>
+				<styleUrl>#__managed_style_08E235FD0D4173316206</styleUrl>
+				<Point>
+					<coordinates>74.48668623729429,19.89518413591957,523.717065307403</coordinates>
+				</Point>
+			</Placemark>
+			<Placemark id="08F40504BE41730D7510">
+				<name>BIN-003</name>
+				<LookAt>
+					<longitude>74.49160351418472</longitude>
+					<latitude>19.90277761838087</latitude>
+					<altitude>520.7152530833536</altitude>
+					<heading>27.09817416878463</heading>
+					<tilt>0</tilt>
+					<gx:fovy>34.99999601</gx:fovy>
+					<range>681.1155695760681</range>
+					<altitudeMode>absolute</altitudeMode>
+				</LookAt>
+				<styleUrl>#__managed_style_02A20168D94173316204</styleUrl>
+				<Point>
+					<coordinates>74.49187208844876,19.9034563708347,521.1222372831363</coordinates>
+				</Point>
+			</Placemark>
+			<Placemark id="09A12097034173178510">
+				<name>BIN-004</name>
+				<LookAt>
+					<longitude>74.49032861096721</longitude>
+					<latitude>19.90407112469603</latitude>
+					<altitude>524.6925177738633</altitude>
+					<heading>27.09970584219264</heading>
+					<tilt>0</tilt>
+					<gx:fovy>34.99999600999999</gx:fovy>
+					<range>503.5465573226248</range>
+					<altitudeMode>absolute</altitudeMode>
+				</LookAt>
+				<styleUrl>#__managed_style_02A20168D94173316204</styleUrl>
+				<Point>
+					<coordinates>74.49015115572115,19.90420380805315,524.9488939683724</coordinates>
+				</Point>
+			</Placemark>
+			<Placemark id="0D7429E1834173185527">
+				<name>TRUCK-002</name>
+				<description><![CDATA[<div>Vehicle ID: TRUCK-002<br></div><div>Driver: <br></div><div>Capacity: 900 kg<br></div><div>Current Load: 400 kg<br></div><div>Status: Active<br></div><div>Zone: B<br></div>]]></description>
+				<LookAt>
+					<longitude>74.48815747433473</longitude>
+					<latitude>19.89959776758957</latitude>
+					<altitude>527.3017412149636</altitude>
+					<heading>27.09928938095539</heading>
+					<tilt>0</tilt>
+					<gx:fovy>34.99999600999999</gx:fovy>
+					<range>2971.149255963683</range>
+					<altitudeMode>absolute</altitudeMode>
+				</LookAt>
+				<styleUrl>#__managed_style_063745CB7A4173316203</styleUrl>
+				<Point>
+					<coordinates>74.49521871213774,19.89865886825301,525.6586274835645</coordinates>
+				</Point>
+			</Placemark>
+			<Placemark id="00A236E74741731C0819">
+				<name>SOC-002</name>
+				<LookAt>
+					<longitude>74.49413967837678</longitude>
+					<latitude>19.89806887705565</latitude>
+					<altitude>521.9756981207205</altitude>
+					<heading>27.10183835658024</heading>
+					<tilt>0</tilt>
+					<gx:fovy>34.99999601</gx:fovy>
+					<range>947.4117233978177</range>
+					<altitudeMode>absolute</altitudeMode>
+				</LookAt>
+				<styleUrl>#__managed_style_02A20168D94173316204</styleUrl>
+				<Point>
+					<coordinates>74.49538202780799,19.89766789800159,523.2161477480554</coordinates>
+				</Point>
+			</Placemark>
+		</Folder>
+	</Folder>
+	<Placemark id="0B5FE4F1354173061944">
+		<name>BIN-001</name>
+		<LookAt>
+			<longitude>74.49057426689727</longitude>
+			<latitude>19.8981287323503</latitude>
+			<altitude>525.1646702305834</altitude>
+			<heading>27.0956578459465</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99999601</gx:fovy>
+			<range>2721.495916427812</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_02A20168D94173316204</styleUrl>
+		<Point>
+			<coordinates>74.4928126172459,19.89672417697726,521.666133051962</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="0955FDBD1E41730A3306">
+		<name>BIN-002</name>
+		<LookAt>
+			<longitude>74.48965117440953</longitude>
+			<latitude>19.89996281141806</latitude>
+			<altitude>524.2756785589899</altitude>
+			<heading>27.0954126927885</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99999601</gx:fovy>
+			<range>2110.393848341773</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_02A20168D94173316204</styleUrl>
+		<Point>
+			<coordinates>74.48822342432274,19.90121525420066,524.3450245782118</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="05D75251B241730A8A24">
+		<name>SOC-001</name>
+		<LookAt>
+			<longitude>74.49025133091448</longitude>
+			<latitude>19.90308784050078</latitude>
+			<altitude>525.4381046176308</altitude>
+			<heading>27.09570058051625</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99999601</gx:fovy>
+			<range>1185.822165746649</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_02A20168D94173316204</styleUrl>
+		<Point>
+			<coordinates>74.48847133946057,19.90314932036245,526.3298749048276</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="0876AD3D5C41730B015E">
+		<name>HH-001</name>
+		<LookAt>
+			<longitude>74.49041587667141</longitude>
+			<latitude>19.89786023638161</latitude>
+			<altitude>526.7195837295915</altitude>
+			<heading>27.09494935982606</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99999601</gx:fovy>
+			<range>1886.741696030076</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_02A20168D94173316204</styleUrl>
+		<Point>
+			<coordinates>74.4878000535349,19.89896730430934,523.5144261959344</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="0C87FD7F924173120614">
+		<name>TRUCK-001</name>
+		<description><![CDATA[<div>Vehicle ID: TRUCK-001<br></div><div>Driver: DRIVER-001<br></div><div>Capacity: 1000 kg<br></div><div>Current Load: 250 kg<br></div><div>Status: Active<br></div><div>Zone: A<br></div>]]></description>
+		<LookAt>
+			<longitude>74.49101853001495</longitude>
+			<latitude>19.90185058502992</latitude>
+			<altitude>524.0658594688929</altitude>
+			<heading>27.09889309567966</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99999601</gx:fovy>
+			<range>1945.719044519356</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_063745CB7A4173316203</styleUrl>
+		<Point>
+			<coordinates>74.4924073160458,19.9014604171903,521.5390961092804</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="065C57854641731FE9BB">
+		<name>ZONE A</name>
+		<description><![CDATA[<div>ZONE A<br></div><div>Driver: DRIVER-001<br></div><div>Truck: TRUCK-001<br></div>]]></description>
+		<LookAt>
+			<longitude>74.4902787546762</longitude>
+			<latitude>19.90233366094189</latitude>
+			<altitude>525.4299174730019</altitude>
+			<heading>27.10174428606315</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99999601</gx:fovy>
+			<range>2904.855202908511</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0CE31429574173316208</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						74.48668943675813,19.90102344105204,0 74.49340465974041,19.90047482993335,0 74.49309319368162,19.90505446108818,0 74.4876666748023,19.90689540784853,0 74.48668943675813,19.90102344105204,0 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="08E46A28EA4173220BD4">
+		<name>ZONE B</name>
+		<description><![CDATA[<div>ZONE B<br></div><div>Driver: DRIVER-002<br></div><div>Truck: TRUCK-002<br></div>]]></description>
+		<LookAt>
+			<longitude>74.49249795745374</longitude>
+			<latitude>19.90039034799747</latitude>
+			<altitude>519.5907189691435</altitude>
+			<heading>27.10227207681924</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99999601</gx:fovy>
+			<range>3137.943975733942</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_1777B73E4E4173316200</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						74.49096775842877,19.8945345993125,0 74.49435381449612,19.89498164018851,0 74.49722674810445,19.89641296229165,0 74.49476848963512,19.89943970639229,0 74.49272233665229,19.89926780098922,0 74.49013721197703,19.89946414860426,0 74.4897386054781,19.90024341844353,0 74.48695032221151,19.90023920336292,0 74.48834927389244,19.89563178205744,0 74.49096775842877,19.8945345993125,0 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0E268B233F4173302710">
+		<name>ROUTE-TRUCK-001</name>
+		<LookAt>
+			<longitude>74.49275493042992</longitude>
+			<latitude>19.89853436452213</latitude>
+			<altitude>525.5544291933159</altitude>
+			<heading>31.92643733765475</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99999601</gx:fovy>
+			<range>3163.449718594202</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_03B08C9C6F4173316200</styleUrl>
+		<LineString>
+			<coordinates>
+				74.49248157775766,19.901574347553,0 74.49218965432007,19.90483867032931,0 74.4903461882984,19.90525117849016,0 74.49035480073491,19.90429726480541,0 74.48967788148224,19.9043444461688,0 74.48972059697175,19.90527019824381,0 74.48825635840062,19.90531697451032,0 74.48878200401418,19.90380640280389,0 74.48778406102997,19.89900819362124,0 74.49077537151125,19.89866495439402,0 74.49140619228886,19.89735101238896,0 74.4867968967711,19.89533154748779,0 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="03CC39373B4173322FA7">
+		<name>ROUTE-TRUCK-002</name>
+		<LookAt>
+			<longitude>74.49200808498476</longitude>
+			<latitude>19.90118078546367</latitude>
+			<altitude>520.6504668295818</altitude>
+			<heading>31.92610228216979</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99999601</gx:fovy>
+			<range>3074.283454228425</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_053AF0A2BF417332512B</styleUrl>
+		<LineString>
+			<coordinates>
+				74.49538039774876,19.89887927744642,0 74.49563882722551,19.89789631445687,0 74.49280543156486,19.89673236663776,0 74.49244500026691,19.89777718264292,0 74.4914533460706,19.89739631878686,0 74.4907822353633,19.89879052323637,0 74.48778301779662,19.89915969760488,0 74.49082728199657,19.89878642895022,0 74.4914234576752,19.89727903015558,0 74.4868410516748,19.89529104857858,0 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="0EEC1BAF2341733289B8">
+		<name>TRUCK-003</name>
+		<description><![CDATA[<div>Vehicle ID: TRUCK-003<br></div><div>Driver: DRIVER-003<br></div><div>Capacity: 800 kg<br></div><div>Current Load: 0 kg<br></div><div>Status: Active<br></div>]]></description>
+		<LookAt>
+			<longitude>74.4914937257998</longitude>
+			<latitude>19.89802994550313</latitude>
+			<altitude>527.0386853591104</altitude>
+			<heading>31.92592737077937</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99999601</gx:fovy>
+			<range>3067.895337003283</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_063745CB7A4173316203</styleUrl>
+		<Point>
+			<coordinates>74.48673315693159,19.89520087290369,523.557032178882</coordinates>
+		</Point>
+	</Placemark>
+</Document>
+</kml>

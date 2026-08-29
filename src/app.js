@@ -110,7 +110,13 @@ app.use('/api/dead-animal-reports', deadAnimalRoutes);
 // Global Error Handler (MUST BE LAST)
 app.use(errorHandler);
 
+// Start server locally; Vercel handles this automatically via @vercel/node
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Waste Management Backend running on port ${PORT}`);
-});
+if (process.env.VERCEL !== '1') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Waste Management Backend running on port ${PORT}`);
+  });
+}
+
+// Export for Vercel serverless
+export default app;
