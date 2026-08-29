@@ -46,6 +46,7 @@ const allowedOrigins = [
   "https://frontend-admin-red-nine.vercel.app",
   "https://citizen-frontend-lemon.vercel.app",
   "https://driver-jet.vercel.app",
+  "https://civic-sync-citizen-dashboard.vercel.app",
 
   process.env.FRONTEND_URL
 ].filter(Boolean);
