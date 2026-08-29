@@ -3,6 +3,20 @@ import { cloudinary } from '../config/cloudinary.js';
 import { extractGpsFromMetadata, verifyGarbageImage, verifyTrashBotResolution } from '../services/imageService.js';
 import { seedInitialTimeline } from './timelineController.js';
 
+const normalizeComplaintStatus = (status) => {
+  const value = String(status || '').trim().toLowerCase();
+
+  if (['resolved', 'solved', 'closed', 'completed', 'cleaned', 'fixed', 'done'].includes(value)) {
+    return 'Resolved';
+  }
+
+  if (['assigned', 'in progress', 'in_progress', 'in-progress', 'work in progress', 'work_in_progress', 'processing'].includes(value)) {
+    return 'Assigned';
+  }
+
+  return 'Open';
+};
+
 // 0. POST /api/complaints/verify-image - Background AI image verification (No Cloudinary Upload)
 export const verifyImageOnly = async (req, res, next) => {
   try {
@@ -171,9 +185,14 @@ export const getAllComplaintsForAdmin = async (req, res, next) => {
 
     if (error) throw error;
 
+    const normalizedComplaints = (complaints || []).map((complaint) => ({
+      ...complaint,
+      status: normalizeComplaintStatus(complaint.status)
+    }));
+
     res.status(200).json({
-      count: complaints.length,
-      complaints
+      count: normalizedComplaints.length,
+      complaints: normalizedComplaints
     });
   } catch (err) {
     next(err);
@@ -246,8 +265,10 @@ export const updateComplaintStatus = async (req, res, next) => {
       return res.status(400).json({ error: 'Status is required.' });
     }
 
-    const updatePayload = { status };
-    if (status.toLowerCase() === 'resolved') {
+    const normalizedIncomingStatus = normalizeComplaintStatus(status);
+    const isResolvedStatus = normalizedIncomingStatus === 'Resolved';
+    const updatePayload = { status: normalizedIncomingStatus };
+    if (isResolvedStatus) {
       if (!req.file) {
         return res.status(400).json({ error: 'Proof photo of the cleaned site is required to resolve this complaint.' });
       }

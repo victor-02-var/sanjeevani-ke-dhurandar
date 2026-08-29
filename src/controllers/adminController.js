@@ -22,11 +22,15 @@ export const getAllCitizens = async (req, res, next) => {
           .eq('citizen_id', citizen.id);
 
         // Get resolved complaints count
-        const { count: resolvedCount } = await supabaseAdmin
+        const { data: citizenComplaints = [] } = await supabaseAdmin
           .from('complaints')
-          .select('id', { count: 'exact', head: true })
-          .eq('citizen_id', citizen.id)
-          .eq('status', 'Resolved');
+          .select('status')
+          .eq('citizen_id', citizen.id);
+
+        const resolvedCount = (citizenComplaints || []).filter((complaint) => {
+          const status = String(complaint.status || '').trim().toLowerCase();
+          return ['resolved', 'solved', 'closed', 'completed', 'cleaned', 'fixed', 'done'].includes(status);
+        }).length;
 
         // Get carbon card
         const { data: carbonCard } = await supabaseAdmin
@@ -100,8 +104,8 @@ export const getCitizenById = async (req, res, next) => {
         carbon_card: carbonCard || { total_points: 0, available_points: 0, tier: 'Bronze' },
         stats: {
           total_complaints: complaints?.length || 0,
-          resolved_complaints: complaints?.filter(c => c.status === 'Resolved').length || 0,
-          pending_complaints: complaints?.filter(c => c.status !== 'Resolved' && c.status !== 'Closed').length || 0,
+          resolved_complaints: complaints?.filter(c => ['resolved', 'solved', 'closed', 'completed', 'cleaned', 'fixed', 'done'].includes(String(c.status || '').trim().toLowerCase())).length || 0,
+          pending_complaints: complaints?.filter(c => !['resolved', 'solved', 'closed', 'completed', 'cleaned', 'fixed', 'done'].includes(String(c.status || '').trim().toLowerCase())).length || 0,
           total_reports: reportsCount || 0,
         },
       },
@@ -171,11 +175,14 @@ export const getAdminStats = async (req, res, next) => {
       .from('complaints')
       .select('id', { count: 'exact', head: true });
 
-    // Count resolved complaints
-    const { count: resolvedCount } = await supabaseAdmin
+    const { data: allComplaints = [] } = await supabaseAdmin
       .from('complaints')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'Resolved');
+      .select('status');
+
+    const resolvedCount = (allComplaints || []).filter((complaint) => {
+      const status = String(complaint.status || '').trim().toLowerCase();
+      return ['resolved', 'solved', 'closed', 'completed', 'cleaned', 'fixed', 'done'].includes(status);
+    }).length;
 
     // Count bins
     const { count: binsCount } = await supabaseAdmin
