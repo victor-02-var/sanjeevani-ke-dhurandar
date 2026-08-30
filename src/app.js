@@ -43,6 +43,7 @@ const allowedOrigins = [
   'http://127.0.0.1:8080',
   'http://127.0.0.1:5173',
   'http://127.0.0.1:5174',
+  "https://civic-sync-admin-dashboard-git-main-aditya-031e.vercel.app",
   "https://frontend-admin-red-nine.vercel.app",
   "https://citizen-frontend-lemon.vercel.app",
   "https://driver-jet.vercel.app",
