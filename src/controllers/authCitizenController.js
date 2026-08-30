@@ -55,11 +55,23 @@ export const citizenSignup = async (req, res, next) => {
 
     console.log('✅ User created successfully:', authData.user.id);
 
-    // Ensure profile has correct role
-    await supabaseAdmin
+    // Ensure profile row exists and has the correct role, even if the DB trigger did not fire.
+    const { data: healedProfile, error: profileUpsertError } = await supabaseAdmin
       .from('profiles')
-      .update({ full_name, role: 'citizen' })
-      .eq('id', authData.user.id);
+      .upsert({
+        id: authData.user.id,
+        email: normalizedEmail,
+        full_name,
+        role: 'citizen',
+        is_active: true,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'id' })
+      .select('id, email, full_name, role, avatar_url, is_active')
+      .single();
+
+    if (profileUpsertError) {
+      console.error('⚠️ Failed to ensure citizen profile row:', profileUpsertError);
+    }
 
     res.status(201).json({
       message: 'Registered successfully. You can now log in with your credentials.',
@@ -90,14 +102,39 @@ export const citizenLogin = async (req, res, next) => {
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
-    // 2. Fetch profile and confirm role
-    const { data: profile, error: profileError } = await supabaseAdmin
+    // 2. Fetch profile and confirm role. If the profile row is missing or stale, repair it.
+    let { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('id, email, full_name, role, avatar_url, is_active')
       .eq('id', authData.user.id)
       .maybeSingle();
 
-    if (profileError || !profile) {
+    if (!profile || profile.role !== 'citizen') {
+      const repairedName = authData.user.user_metadata?.full_name || profile?.full_name || email.trim().split('@')[0] || 'Citizen User';
+
+      const { data: healedProfile, error: healError } = await supabaseAdmin
+        .from('profiles')
+        .upsert({
+          id: authData.user.id,
+          email: authData.user.email || email.trim().toLowerCase(),
+          full_name: repairedName,
+          role: 'citizen',
+          is_active: true,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'id' })
+        .select('id, email, full_name, role, avatar_url, is_active')
+        .single();
+
+      if (!healError && healedProfile) {
+        profile = healedProfile;
+      }
+    }
+
+    if (profileError && profileError.code !== 'PGRST116') {
+      console.error('⚠️ Profile lookup error during citizen login:', profileError);
+    }
+
+    if (!profile) {
       return res.status(401).json({ error: 'Citizen profile not found.' });
     }
 
